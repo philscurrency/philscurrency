@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
+// Copyright (c) 2014-2015 The Dash developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -19,6 +20,7 @@
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
+#include "masternode-payments.h"
 
 #include <boost/thread.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -27,7 +29,7 @@ using namespace std;
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// BitcoinMiner
+// PhilscurrencyMiner
 //
 
 //
@@ -109,11 +111,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
     txNew.vout.resize(1);
     txNew.vout[0].scriptPubKey = scriptPubKeyIn;
 
-    // Add dummy coinbase tx as first transaction
-    pblock->vtx.push_back(CTransaction());
-    pblocktemplate->vTxFees.push_back(-1); // updated at end
-    pblocktemplate->vTxSigOps.push_back(-1); // updated at end
-
     // Largest block you're willing to create:
     unsigned int nBlockMaxSize = GetArg("-blockmaxsize", DEFAULT_BLOCK_MAX_SIZE);
     // Limit to betweeen 1K and MAX_BLOCK_SIZE-1K for sanity:
@@ -134,9 +131,15 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
 
     {
         LOCK2(cs_main, mempool.cs);
+
         CBlockIndex* pindexPrev = chainActive.Tip();
         const int nHeight = pindexPrev->nHeight + 1;
         CCoinsViewCache view(pcoinsTip);
+
+        // Add our coinbase tx as first transaction
+        pblock->vtx.push_back(txNew);
+        pblocktemplate->vTxFees.push_back(-1); // updated at end
+        pblocktemplate->vTxSigOps.push_back(-1); // updated at end
 
         // Priority order to process transactions
         list<COrphan> vOrphan; // list memory doesn't move
@@ -316,12 +319,19 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
             }
         }
 
+        // Masternode and general budget payments
+        FillBlockPayee(txNew, nFees);
+
+        // Make payee
+	    if(txNew.vout.size() > 1){
+            pblock->payee = txNew.vout[1].scriptPubKey;
+        }
+
         nLastBlockTx = nBlockTx;
         nLastBlockSize = nBlockSize;
         LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
 
         // Compute final coinbase transaction.
-        txNew.vout[0].nValue = GetBlockValue(nHeight, nFees);
         txNew.vin[0].scriptSig = CScript() << nHeight << OP_0;
         pblock->vtx[0] = txNew;
         pblocktemplate->vTxFees[0] = -nFees;
@@ -368,6 +378,42 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
 double dHashesPerSec = 0.0;
 int64_t nHPSTimerStart = 0;
 
+// ***TODO*** ScanHash is not yet used in Philscurrency
+//
+// ScanHash scans nonces looking for a hash with at least some zero bits.
+// The nonce is usually preserved between calls, but periodically or if the
+// nonce is 0xffff0000 or above, the block is rebuilt and nNonce starts over at
+// zero.
+//
+//bool static ScanHash(const CBlockHeader *pblock, uint32_t& nNonce, uint256 *phash)
+//{
+//    // Write the first 76 bytes of the block header to a double-SHA256 state.
+//    CHash256 hasher;
+//    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
+//    ss << *pblock;
+//    assert(ss.size() == 80);
+//    hasher.Write((unsigned char*)&ss[0], 76);
+
+//    while (true) {
+//        nNonce++;
+
+//        // Write the last 4 bytes of the block header (the nonce) to a copy of
+//        // the double-SHA256 state, and compute the result.
+//        CHash256(hasher).Write((unsigned char*)&nNonce, 4).Finalize((unsigned char*)phash);
+
+//        // Return the nonce if the hash has at least some zero bits,
+//        // caller will check if it has enough to reach the target
+//        if (((uint16_t*)phash)[15] == 0)
+//            return true;
+
+//        // If nothing found after trying for a while, return -1
+//        if ((nNonce & 0xffff) == 0)
+//            return false;
+//        if ((nNonce & 0xfff) == 0)
+//            boost::this_thread::interruption_point();
+//    }
+//}
+
 CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey)
 {
     CPubKey pubkey;
@@ -407,6 +453,7 @@ bool ProcessBlockFound(CBlock* pblock, CWallet& wallet, CReserveKey& reservekey)
     return true;
 }
 
+// ***TODO*** that part changed in bitcoin, we are using a mix with old one here for now
 void static BitcoinMiner(CWallet *pwallet)
 {
     LogPrintf("PhilscurrencyMiner started\n");
@@ -439,6 +486,7 @@ void static BitcoinMiner(CWallet *pwallet)
             //
             unsigned int nTransactionsUpdatedLast = mempool.GetTransactionsUpdated();
             CBlockIndex* pindexPrev = chainActive.Tip();
+            if(!pindexPrev) break;
 
             auto_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey));
             if (!pblocktemplate.get())
@@ -543,7 +591,7 @@ void static BitcoinMiner(CWallet *pwallet)
     }
     catch (const std::runtime_error &e)
     {
-        LogPrintf("PhilscurrencyMiner runtime error: %s\n", e.what());
+        LogPrintf("BitcoinMiner runtime error: %s\n", e.what());
         return;
     }
 }

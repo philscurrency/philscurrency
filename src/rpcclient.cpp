@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
+// Copyright (c) 2014-2015 The Dash developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -21,7 +22,7 @@ public:
     std::string methodName;            //! method whose params want conversion
     int paramIdx;                      //! 0-based idx of param to convert
 };
-
+// ***TODO***
 static const CRPCConvertParam vRPCConvertParams[] =
 {
     { "stop", 0 },
@@ -32,6 +33,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getnetworkhashps", 0 },
     { "getnetworkhashps", 1 },
     { "sendtoaddress", 1 },
+    { "sendtoaddressix", 1 },
     { "settxfee", 0 },
     { "getreceivedbyaddress", 1 },
     { "getreceivedbyaccount", 1 },
@@ -54,6 +56,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "listaccounts", 0 },
     { "listaccounts", 1 },
     { "walletpassphrase", 1 },
+    { "walletpassphrase", 2 },
     { "getblocktemplate", 0 },
     { "listsinceblock", 1 },
     { "listsinceblock", 2 },
@@ -67,6 +70,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "listunspent", 1 },
     { "listunspent", 2 },
     { "getblock", 1 },
+    { "getblockheader", 1 },
     { "gettransaction", 1 },
     { "getrawtransaction", 1 },
     { "createrawtransaction", 0 },
@@ -88,6 +92,13 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "estimatepriority", 0 },
     { "prioritisetransaction", 1 },
     { "prioritisetransaction", 2 },
+    { "spork", 1 },
+    { "mnbudget", 3 },
+    { "mnbudget", 4 },
+    { "mnbudget", 6 },
+    { "mnbudget", 8 },
+    { "mnbudgetvoteraw", 1 },
+    { "mnbudgetvoteraw", 4 },
 };
 
 class CRPCConvertTable

@@ -17,6 +17,7 @@ QT_BEGIN_NAMESPACE
 class QComboBox;
 class QDateTimeEdit;
 class QFrame;
+class QItemSelectionModel;
 class QLineEdit;
 class QMenu;
 class QModelIndex;
@@ -52,7 +53,7 @@ public:
         STATUS_COLUMN_WIDTH = 23,
         WATCHONLY_COLUMN_WIDTH = 23,
         DATE_COLUMN_WIDTH = 120,
-        TYPE_COLUMN_WIDTH = 120,
+        TYPE_COLUMN_WIDTH = 240,
         AMOUNT_MINIMUM_COLUMN_WIDTH = 120,
         MINIMUM_COLUMN_WIDTH = 23
     };
@@ -61,7 +62,6 @@ private:
     WalletModel *model;
     TransactionFilterProxy *transactionProxyModel;
     QTableView *transactionView;
-
     QComboBox *dateWidget;
     QComboBox *typeWidget;
     QComboBox *watchOnlyWidget;
@@ -101,6 +101,9 @@ signals:
     /**  Fired when a message should be reported to the user */
     void message(const QString &title, const QString &message, unsigned int style);
 
+    /** Send computed sum back to wallet-view */
+    void trxAmount(QString amount);
+
 public slots:
     void chooseDate(int idx);
     void chooseType(int idx);
@@ -109,7 +112,7 @@ public slots:
     void changedAmount(const QString &amount);
     void exportClicked();
     void focusTransaction(const QModelIndex&);
-
+    void computeSum();
 };
 
 #endif // BITCOIN_QT_TRANSACTIONVIEW_H

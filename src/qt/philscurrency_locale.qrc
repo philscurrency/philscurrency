@@ -1,0 +1,20 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/translations">
+        <file alias="bg">locale/philscurrency_bg.qm</file>
+        <file alias="de">locale/philscurrency_de.qm</file>
+        <file alias="en">locale/philscurrency_en.qm</file>
+        <file alias="es">locale/philscurrency_es.qm</file>
+        <file alias="fi">locale/philscurrency_fi.qm</file>
+        <file alias="fr">locale/philscurrency_fr.qm</file>
+        <file alias="it">locale/philscurrency_it.qm</file>
+        <file alias="ja">locale/philscurrency_ja.qm</file>
+        <file alias="pl">locale/philscurrency_pl.qm</file>
+        <file alias="pt">locale/philscurrency_pt.qm</file>
+        <file alias="ru">locale/philscurrency_ru.qm</file>
+        <file alias="sk">locale/philscurrency_sk.qm</file>
+        <file alias="sv">locale/philscurrency_sv.qm</file>
+        <file alias="vi">locale/philscurrency_vi.qm</file>
+        <file alias="zh_CN">locale/philscurrency_zh_CN.qm</file>
+        <file alias="zh_TW">locale/philscurrency_zh_TW.qm</file>
+    </qresource>
+</RCC>

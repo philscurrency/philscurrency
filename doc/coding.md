@@ -53,7 +53,7 @@ bool function(int arg1, const char *arg2)
 ```
 A complete list of `@xxx` commands can be found at http://www.stack.nl/~dimitri/doxygen/manual/commands.html.
 As Doxygen recognizes the comments by the delimiters (`/**` and `*/` in this case), you don't
-*need* to provide any commands for a comment to be valid, just a description text is fine. 
+*need* to provide any commands for a comment to be valid, just a description text is fine.
 
 To describe a class use the same construct above the class definition:
 ```c++
@@ -119,7 +119,7 @@ Threads
 
 - ThreadMapPort : Universal plug-and-play startup/shutdown
 
-- ThreadSocketHandler : Sends/Receives data from peers on port 36003.
+- ThreadSocketHandler : Sends/Receives data from peers on port 9999.
 
 - ThreadOpenAddedConnections : Opens network connections to added nodes.
 
@@ -131,7 +131,7 @@ Threads
 
 - ThreadFlushWalletDB : Close the wallet.dat file if it hasn't been used in 500ms.
 
-- ThreadRPCServer : Remote procedure call handler, listens on port 36002 for connections and services them.
+- ThreadRPCServer : Remote procedure call handler, listens on port 9998 for connections and services them.
 
 - BitcoinMiner : Generates bitcoins (if wallet is enabled).
 

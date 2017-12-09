@@ -23,7 +23,7 @@ struct CDNSSeedData {
 
 /**
  * CChainParams defines various tweakable parameters of a given instance of the
- * Bitcoin system. There are three: the main network on which people trade goods
+ * Philscurrency system. There are three: the main network on which people trade goods
  * and services, the public test network which gets reset from time to time and
  * a regression test mode which is intended for private networks only. It has
  * minimal difficulty to ensure that blocks can be found instantly.
@@ -69,7 +69,6 @@ public:
     int64_t TargetTimespan() const { return nTargetTimespan; }
     int64_t TargetSpacing() const { return nTargetSpacing; }
     int64_t Interval() const { return nTargetTimespan / nTargetSpacing; }
-    int64_t MaxTipAge() const { return nMaxTipAge; }
     /** Make miner stop after a block is found. In RPC, don't return until nGenProcLimit blocks are generated */
     bool MineBlocksOnDemand() const { return fMineBlocksOnDemand; }
     /** In the future use NetworkIDString() for RPC fields */
@@ -80,9 +79,12 @@ public:
     const std::vector<unsigned char>& Base58Prefix(Base58Type type) const { return base58Prefixes[type]; }
     const std::vector<CAddress>& FixedSeeds() const { return vFixedSeeds; }
     virtual const Checkpoints::CCheckpointData& Checkpoints() const = 0;
-
-    // Philscurrency: Height to enforce v2 block
-    int EnforceV2AfterHeight() const { return nEnforceV2AfterHeight; }
+    int PoolMaxTransactions() const { return nPoolMaxTransactions; }
+    std::string SporkKey() const { return strSporkKey; }
+    std::string DarksendPoolDummyAddress() const { return strDarksendPoolDummyAddress; }
+    std::string MasternodePaymentPubKey() const { return strMasternodePaymentsPubKey; }
+    int64_t StartMasternodePayments() const { return nStartMasternodePayments; }
+    CBaseChainParams::Network NetworkID() const { return networkID; }
 protected:
     CChainParams() {}
 
@@ -99,7 +101,6 @@ protected:
     int64_t nTargetTimespan;
     int64_t nTargetSpacing;
     int nMinerThreads;
-    long nMaxTipAge;
     std::vector<CDNSSeedData> vSeeds;
     std::vector<unsigned char> base58Prefixes[MAX_BASE58_TYPES];
     CBaseChainParams::Network networkID;
@@ -114,9 +115,11 @@ protected:
     bool fMineBlocksOnDemand;
     bool fSkipProofOfWorkCheck;
     bool fTestnetToBeDeprecatedFieldRPC;
-
-    // Philscurrency: Height to enforce v2 blocks
-    int nEnforceV2AfterHeight;
+    int nPoolMaxTransactions;
+    std::string strSporkKey;
+    std::string strMasternodePaymentsPubKey;
+    std::string strDarksendPoolDummyAddress;
+    int64_t nStartMasternodePayments;
 };
 
 /** 

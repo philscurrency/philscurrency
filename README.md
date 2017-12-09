@@ -1,19 +1,30 @@
-Philscurrency Core 
-=====================================
+Philscurrency Core
+===============================
 
-https://philscurrency.com
+
+https://www.philscurrency.com
+
+Copyright (c) 2009-2015 Bitcoin Core Developers
+
+Copyright (c) 2011-2015 Litecoin Core Developers
+
+Copyright (c) 2014-2016 Dash Core Developers
+
+Copyright (c) 2015-2017 Philscurrency Developers
+
 
 What is Philscurrency?
 ----------------
 
-Philscurrency is an experimental new digital currency that enables instant payments to
-anyone, anywhere in the world. Philscurrency uses peer-to-peer technology to operate
-with no central authority: managing transactions and issuing money are carried
-out collectively by the network. Philscurrency Core is the name of open source
-software which enables the use of this currency.
+Philscurrency is an experimental new digital currency that enables anonymous, instant
+payments to anyone, anywhere in the world. Philscurrency uses peer-to-peer technology
+to operate with no central authority: managing transactions and issuing money
+are carried out collectively by the network. Philscurrency Core is the name of open
+source software which enables the use of this currency.
 
 For more information, as well as an immediately useable, binary version of
-the Philscurrency Core software, see https://philscurrency.com
+the Philscurrency Core software, see https://www.philscurrency.com
+
 
 License
 -------
@@ -55,14 +66,4 @@ on all categories (and give you a very large debug.log file).
 
 The Qt code routes qDebug() output to debug.log under category "qt": run with -debug=qt
 to see it.
-
-**testnet and regtest modes**
-
-Run with the -testnet option to run with "play philscurrencys" on the test network, if you
-are testing multi-machine code that needs to operate across the internet.
-
-If you are testing something that can run on one machine, run with the -regtest option.
-In regression test mode, blocks can be created on-demand; see qa/rpc-tests/ for tests
-that run in -regtest mode.
-
 

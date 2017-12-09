@@ -39,10 +39,10 @@ CLEAN_BITCOIN_QT_TEST = $(TEST_QT_MOC_CPP) qt/test/*.gcda qt/test/*.gcno
 
 CLEANFILES += $(CLEAN_BITCOIN_QT_TEST)
 
-test_bitcoin_qt : qt/test/test_philscurrency-qt$(EXEEXT)
+test_philscurrency_qt : qt/test/test_philscurrency-qt$(EXEEXT)
 
-test_bitcoin_qt_check : qt/test/test_philscurrency-qt$(EXEEXT) FORCE
+test_philscurrency_qt_check : qt/test/test_philscurrency-qt$(EXEEXT) FORCE
 	$(MAKE) check-TESTS TESTS=$^
 
-test_bitcoin_qt_clean: FORCE
+test_philscurrency_qt_clean: FORCE
 	rm -f $(CLEAN_BITCOIN_QT_TEST) $(qt_test_test_philscurrency_qt_OBJECTS)

@@ -10,6 +10,8 @@
 #include <QDialog>
 #include <QString>
 
+static const int MAX_SEND_POPUP_ENTRIES = 10;
+
 class ClientModel;
 class OptionsModel;
 class SendCoinsEntry;
@@ -49,7 +51,7 @@ public slots:
     void accept();
     SendCoinsEntry *addEntry();
     void updateTabsAndLabels();
-    void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance,
+    void setBalance(const CAmount& balance, const CAmount& unconfirmedBalance, const CAmount& immatureBalance, const CAmount& anonymizedBalance,
                     const CAmount& watchOnlyBalance, const CAmount& watchUnconfBalance, const CAmount& watchImmatureBalance);
 
 private:
@@ -57,6 +59,7 @@ private:
     ClientModel *clientModel;
     WalletModel *model;
     bool fNewRecipientAllowed;
+    void send(QList<SendCoinsRecipient> recipients, QString strFee, QStringList formatted);
     bool fFeeMinimized;
 
     // Process WalletModel::SendCoinsReturn and generate a pair consisting
@@ -72,6 +75,7 @@ private slots:
     void on_buttonMinimizeFee_clicked();
     void removeEntry(SendCoinsEntry* entry);
     void updateDisplayUnit();
+    void updateInstantX();
     void coinControlFeatureChanged(bool);
     void coinControlButtonClicked();
     void coinControlChangeChecked(int);

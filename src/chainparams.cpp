@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
+// Copyright (c) 2014-2015 The Dash developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -56,11 +57,12 @@ static Checkpoints::MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
         (  5, uint256("0xdf35912a3c63901288128cfb69293d7129a7cd58a013a92b329393d9ff31d614"))
         (  315, uint256("0xb44c50fdf4d2ba0a2e123ca5eb0050fbb165ce9660547cdbee060be74161f0f2"))
+	(  33194, uint256("0xda5864067b12c04f3fb0adb3d3331b4fe3b4aafb5e7e9570273fe6a9296aae5b"))
         ;
 static const Checkpoints::CCheckpointData data = {
         &mapCheckpoints,
-        1503291836, // * UNIX timestamp of last checkpoint block
-        567,   // * total number of transactions between genesis and last checkpoint
+        1512803778, // * UNIX timestamp of last checkpoint block
+        40093,   // * total number of transactions between genesis and last checkpoint
                     //   (the tx=... number in the SetBestChain debug.log lines)
         750     // * estimated number of transactions per day after checkpoint
     };
@@ -105,25 +107,14 @@ public:
         vAlertPubKey = ParseHex("044a298ea107486f12d1dfa66ec6bf82b1341f4818e7298b2352a7aa5a21545a2f33472dd1e749f24f92e6d846880bc5d362cf040dcb5d7025d00034c71e74988f");
         nDefaultPort = 36003;
         bnProofOfWorkLimit = ~uint256(0) >> 20;
-        nSubsidyHalvingInterval = 1200000;
+        nSubsidyHalvingInterval = 400000;
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
         nToCheckBlockUpgradeMajority = 1000;
         nMinerThreads = 0;
         nTargetTimespan = 10 * 60; // 10 minutes
         nTargetSpacing = 1 * 60; // 1 minute
-        nMaxTipAge = 24 * 60 * 60;
 
-        /**
-         * Build the genesis block. Note that the output of the genesis coinbase cannot
-         * be spent as it did not originally exist in the database.
-         * 
-         * CBlock(hash=000000000019d6, ver=1, hashPrevBlock=00000000000000, hashMerkleRoot=4a5e1e, nTime=1231006505, nBits=1d00ffff, nNonce=2083236893, vtx=1)
-         *   CTransaction(hash=4a5e1e, ver=1, vin.size=1, vout.size=1, nLockTime=0)
-         *     CTxIn(COutPoint(000000, -1), coinbase 04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73)
-         *     CTxOut(nValue=50.00000000, scriptPubKey=0x5F1DF16B2B704C8A578D0B)
-         *   vMerkleTree: 4a5e1e
-         */
         const char* pszTimestamp = "CNN June 28 2017 The next big thing is here";
         CMutableTransaction txNew;
         txNew.vin.resize(1);
@@ -148,11 +139,11 @@ public:
         vSeeds.push_back(CDNSSeedData("52.14.113.155", "52.14.113.155"));
         
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,56);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,118);
-        base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,117);
-        base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x04)(0x88)(0xB2)(0x1E).convert_to_container<std::vector<unsigned char> >();
-        base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x04)(0x88)(0xAD)(0xE4).convert_to_container<std::vector<unsigned char> >();
+        base58Prefixes[PUBKEY_ADDRESS] = list_of(56);
+        base58Prefixes[SCRIPT_ADDRESS] = list_of(118);
+        base58Prefixes[SECRET_KEY] =     list_of(117);
+        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x88)(0xB2)(0x1E);
+        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x88)(0xAD)(0xE4);
 
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
@@ -165,8 +156,11 @@ public:
         fSkipProofOfWorkCheck = false;
         fTestnetToBeDeprecatedFieldRPC = false;
 
-        // Philscurrency: Mainnet v2 enforced as of block 710k
-        nEnforceV2AfterHeight = 710000;
+        nPoolMaxTransactions = 3;
+        strSporkKey = "045fdc1d5796a4cc3ec7b93de854747f91ac8c44b150a37a45fe7b115e19463f902639ac385a7262423d5ac2e5fcea81a403525b25e56c6ff6d6020ff97b9bff57";
+        strMasternodePaymentsPubKey = "049484542a6a421df34eec30f83b59cdc6ba468fe8d5a306faddb600ceb5b5cfe612eedad016275a0caf5c9c0db69974de9fc6127c74bc69768329c4ff9522c1cf";
+        strDarksendPoolDummyAddress = "Pq19GqFvajRrEdDHYRKGYjTsQfpV5jyipF";
+        nStartMasternodePayments = 1513382400; //December 16, 2017 12:00:00 AM GMT+00:00
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const 
@@ -197,7 +191,6 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 10 * 60; // 10 minutes
         nTargetSpacing = 1 * 60; // 1 minute
-        nMaxTipAge = 0x7fffffff;
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime = 1503261995;
@@ -209,11 +202,11 @@ public:
         vSeeds.clear();
         
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,111);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,196);
-        base58Prefixes[SECRET_KEY]     = std::vector<unsigned char>(1,239);
-        base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x04)(0x35)(0x87)(0xCF).convert_to_container<std::vector<unsigned char> >();
-        base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x04)(0x35)(0x83)(0x94).convert_to_container<std::vector<unsigned char> >();
+        base58Prefixes[PUBKEY_ADDRESS] = list_of(111);
+        base58Prefixes[SCRIPT_ADDRESS] = list_of(196);
+        base58Prefixes[SECRET_KEY]     = list_of(239);
+        base58Prefixes[EXT_PUBLIC_KEY] = list_of(0x04)(0x35)(0x87)(0xCF);
+        base58Prefixes[EXT_SECRET_KEY] = list_of(0x04)(0x35)(0x83)(0x94);
 
         convertSeed6(vFixedSeeds, pnSeed6_test, ARRAYLEN(pnSeed6_test));
 
@@ -225,8 +218,11 @@ public:
         fMineBlocksOnDemand = false;
         fTestnetToBeDeprecatedFieldRPC = true;
 
-        // Philscurrency: v2 enforced using Bitcoin's supermajority rule
-        nEnforceV2AfterHeight = -1;
+        nPoolMaxTransactions = 2;
+        strSporkKey = "046f78dcf911fbd61910136f7f0f8d90578f68d0b3ac973b5040fb7afb501b5939f39b108b0569dca71488f5bbf498d92e4d1194f6f941307ffd95f75e76869f0e";
+        strMasternodePaymentsPubKey = "046f78dcf911fbd61910136f7f0f8d90578f68d0b3ac973b5040fb7afb501b5939f39b108b0569dca71488f5bbf498d92e4d1194f6f941307ffd95f75e76869f0e";
+        strDarksendPoolDummyAddress = "P1EZuxhhNMAUofTBEeLqGE1bJrpC2TWRNp";
+        nStartMasternodePayments = 1513382400; //December 16, 2017 12:00:00 AM GMT+00:00
     }
     const Checkpoints::CCheckpointData& Checkpoints() const 
     {
@@ -256,7 +252,6 @@ public:
         nTargetTimespan = 10 * 60; // 10 minutes
         nTargetSpacing = 1 * 60; // 1 minute
         bnProofOfWorkLimit = ~uint256(0) >> 1;
-        nMaxTipAge = 24 * 60 * 60;
         genesis.nTime = 1503262638;
         genesis.nBits = 0x207fffff;
         genesis.nNonce = 2;
@@ -274,9 +269,6 @@ public:
         fRequireStandard = false;
         fMineBlocksOnDemand = true;
         fTestnetToBeDeprecatedFieldRPC = false;
-
-        // Philscurrency: v2 enforced using Bitcoin's supermajority rule
-        nEnforceV2AfterHeight = -1;
     }
     const Checkpoints::CCheckpointData& Checkpoints() const 
     {
@@ -302,9 +294,6 @@ public:
         fDefaultConsistencyChecks = true;
         fAllowMinDifficultyBlocks = false;
         fMineBlocksOnDemand = true;
-
-        // Philscurrency: v2 enforced using Bitcoin's supermajority rule
-        nEnforceV2AfterHeight = -1;
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const 

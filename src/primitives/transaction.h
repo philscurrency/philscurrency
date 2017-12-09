@@ -47,6 +47,10 @@ public:
     }
 
     std::string ToString() const;
+    std::string ToStringShort() const;
+
+    uint256 GetHash();
+
 };
 
 /** An input of a transaction.  It contains the location of the previous
@@ -59,6 +63,7 @@ public:
     COutPoint prevout;
     CScript scriptSig;
     uint32_t nSequence;
+    CScript prevPubKey;
 
     CTxIn()
     {
@@ -105,6 +110,7 @@ class CTxOut
 public:
     CAmount nValue;
     CScript scriptPubKey;
+    int nRounds;
 
     CTxOut()
     {
@@ -125,6 +131,7 @@ public:
     {
         nValue = -1;
         scriptPubKey.clear();
+        nRounds = -10; // an initial value, should be no way to get this by calculations
     }
 
     bool IsNull() const
@@ -136,15 +143,22 @@ public:
 
     bool IsDust(CFeeRate minRelayTxFee) const
     {
-        // IsDust() detection disabled, allows any valid dust to be relayed
-        // The fees imposed on each dust txo is considered sufficient spam deterrant.
-        return false;
+        // "Dust" is defined in terms of CTransaction::minRelayTxFee, which has units satoshi-per-kilobyte.
+        // If you'd pay more than 1/3 in fees to spend something, then we consider it dust.
+        // A typical txout is 34 bytes big, and will need a CTxIn of at least 148 bytes to spend
+        // i.e. total is 148 + 32 = 182 bytes. Default -minrelaytxfee is 10000 satoshi per kB
+        // and that means that fee per txout is 182 * 10000 / 1000 = 1820 satoshi.
+        // So dust is a txout less than 1820 *3 = 5460 satoshi
+        // with default -minrelaytxfee = minRelayTxFee = 10000 satoshi per kB.
+        size_t nSize = GetSerializeSize(SER_DISK,0)+148u;
+        return (nValue < 3*minRelayTxFee.GetFee(nSize));
     }
 
     friend bool operator==(const CTxOut& a, const CTxOut& b)
     {
         return (a.nValue       == b.nValue &&
-                a.scriptPubKey == b.scriptPubKey);
+                a.scriptPubKey == b.scriptPubKey &&
+                a.nRounds      == b.nRounds);
     }
 
     friend bool operator!=(const CTxOut& a, const CTxOut& b)
@@ -264,6 +278,19 @@ struct CMutableTransaction
      * fly, as opposed to GetHash() in CTransaction, which uses a cached result.
      */
     uint256 GetHash() const;
+
+    std::string ToString() const;
+
+    friend bool operator==(const CMutableTransaction& a, const CMutableTransaction& b)
+    {
+        return a.GetHash() == b.GetHash();
+    }
+
+    friend bool operator!=(const CMutableTransaction& a, const CMutableTransaction& b)
+    {
+        return !(a == b);
+    }
+
 };
 
 #endif // BITCOIN_PRIMITIVES_TRANSACTION_H

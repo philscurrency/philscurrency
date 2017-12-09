@@ -3,6 +3,7 @@ bin_PROGRAMS += test/test_philscurrency
 TEST_SRCDIR = test
 TEST_BINARY=test/test_philscurrency$(EXEEXT)
 
+
 EXTRA_DIST += \
 	test/bctest.py \
 	test/bitcoin-util-test.py \
@@ -65,7 +66,7 @@ BITCOIN_TESTS =\
   test/sighash_tests.cpp \
   test/sigopcount_tests.cpp \
   test/skiplist_tests.cpp \
-  test/test_bitcoin.cpp \
+  test/test_philscurrency.cpp \
   test/timedata_tests.cpp \
   test/transaction_tests.cpp \
   test/uint256_tests.cpp \
@@ -98,12 +99,12 @@ CLEAN_BITCOIN_TEST = test/*.gcda test/*.gcno $(GENERATED_TEST_FILES)
 
 CLEANFILES += $(CLEAN_BITCOIN_TEST)
 
-bitcoin_test: $(TEST_BINARY)
+philscurrency_test: $(TEST_BINARY)
 
-bitcoin_test_check: $(TEST_BINARY) FORCE
+philscurrency_test_check: $(TEST_BINARY) FORCE
 	$(MAKE) check-TESTS TESTS=$^
 
-bitcoin_test_clean : FORCE
+philscurrency_test_clean : FORCE
 	rm -f $(CLEAN_BITCOIN_TEST) $(test_test_philscurrency_OBJECTS) $(TEST_BINARY)
 
 check-local:

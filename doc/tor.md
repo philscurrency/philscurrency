@@ -1,16 +1,19 @@
-TOR SUPPORT IN BITCOIN
-======================
+TOR SUPPORT IN PHILS
+=======================
 
-It is possible to run Bitcoin as a Tor hidden service, and connect to such services.
+It is possible to run Philscurrency as a Tor hidden service, and connect to such services.
 
-The following directions assume you have a Tor proxy running on port 9050. Many distributions default to having a SOCKS proxy listening on port 9050, but others may not. In particular, the Tor Browser Bundle defaults to listening on a random port. See [Tor Project FAQ:TBBSocksPort](https://www.torproject.org/docs/faq.html.en#TBBSocksPort) for how to properly
-configure Tor.
+The following directions assume you have a Tor proxy running on port 9050. Many
+distributions default to having a SOCKS proxy listening on port 9050, but others
+may not. In particular, the Tor Browser Bundle defaults to listening on a random
+port. See [Tor Project FAQ:TBBSocksPort](https://www.torproject.org/docs/faq.html.en#TBBSocksPort)
+for how to properly configure Tor.
 
 
-1. Run bitcoin behind a Tor proxy
----------------------------------
+1. Run philscurrency behind a Tor proxy
+----------------------------------
 
-The first step is running Bitcoin behind a Tor proxy. This will already make all
+The first step is running Philscurrency behind a Tor proxy. This will already make all
 outgoing connections be anonymized, but more is possible.
 
 	-proxy=ip:port  Set the proxy server. If SOCKS5 is selected (default), this proxy
@@ -29,29 +32,36 @@ outgoing connections be anonymized, but more is possible.
 	-seednode=X     SOCKS5. In Tor mode, such addresses can also be exchanged with
 	                other P2P nodes.
 
+	-onlynet=tor    Only connect to .onion nodes and drop IPv4/6 connections.
+
+An example how to start the client if the Tor proxy is running on local host on
+port 9050 and only allows .onion nodes to connect:
+
+	./philscurrencyd -onion=127.0.0.1:9050 -onlynet=tor -listen=0 -addnode=ssapp53tmftyjmjb.onion
+
 In a typical situation, this suffices to run behind a Tor proxy:
 
-	./bitcoin -proxy=127.0.0.1:9050
+	./philscurrencyd -proxy=127.0.0.1:9050
 
 
-2. Run a bitcoin hidden server
-------------------------------
+2. Run a philscurrency hidden server
+-------------------------------
 
 If you configure your Tor system accordingly, it is possible to make your node also
 reachable from the Tor network. Add these lines to your /etc/tor/torrc (or equivalent
 config file):
 
-	HiddenServiceDir /var/lib/tor/bitcoin-service/
-	HiddenServicePort 36003 127.0.0.1:36003
+	HiddenServiceDir /var/lib/tor/philscurrency-service/
+	HiddenServicePort 9999 127.0.0.1:9999
 	HiddenServicePort 36005 127.0.0.1:36005
 
 The directory can be different of course, but (both) port numbers should be equal to
-your bitcoind's P2P listen port (36003 by default).
+your philscurrencyd's P2P listen port (9999 by default).
 
-	-externalip=X   You can tell bitcoin about its publicly reachable address using
+	-externalip=X   You can tell philscurrency about its publicly reachable address using
 	                this option, and this can be a .onion address. Given the above
 	                configuration, you can find your onion address in
-	                /var/lib/tor/bitcoin-service/hostname. Onion addresses are given
+	                /var/lib/tor/philscurrency-service/hostname. Onion addresses are given
 	                preference for your node to advertize itself with, for connections
 	                coming from unroutable addresses (such as 127.0.0.1, where the
 	                Tor proxy typically runs).
@@ -68,17 +78,29 @@ your bitcoind's P2P listen port (36003 by default).
 
 In a typical situation, where you're only reachable via Tor, this should suffice:
 
-	./bitcoind -proxy=127.0.0.1:9050 -externalip=57qr3yd1nyntf5k.onion -listen
+	./philscurrencyd -proxy=127.0.0.1:9050 -externalip=ssapp53tmftyjmjb.onion -listen
 
 (obviously, replace the Onion address with your own). If you don't care too much
 about hiding your node, and want to be reachable on IPv4 as well, additionally
 specify:
 
-	./bitcoind ... -discover
+	./philscurrencyd ... -discover
 
-and open port 36003 on your firewall (or use -upnp).
+and open port 9999 on your firewall (or use -upnp).
 
 If you only want to use Tor to reach onion addresses, but not use it as a proxy
 for normal IPv4/IPv6 communication, use:
 
-	./bitcoin -onion=127.0.0.1:9050 -externalip=57qr3yd1nyntf5k.onion -discover
+	./philscurrencyd -onion=127.0.0.1:9050 -externalip=ssapp53tmftyjmjb.onion -discover
+
+
+3. List of known philscurrency Tor relays
+------------------------------------
+
+* [philscurrencyie7ghp67.onion](http://philscurrencyie7ghp67.onion/)
+* [drktalkwaybgxnoq.onion](http://drktalkwaybgxnoq.onion/)
+* [drkcoinooditvool.onion](http://drkcoinooditvool.onion/)
+* [darkcoxbtzggpmcc.onion](http://darkcoxbtzggpmcc.onion/)
+* [ssapp53tmftyjmjb.onion](http://ssapp53tmftyjmjb.onion/)
+* [j2dfl3cwxyxpbc7s.onion](http://j2dfl3cwxyxpbc7s.onion/)
+* [vf6d2mxpuhh2cbxt.onion](http://vf6d2mxpuhh2cbxt.onion/)

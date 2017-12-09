@@ -13,7 +13,7 @@
 - (NSString *)__bundleIdentifier
 {
     if (self == [NSBundle mainBundle]) {
-        return @"org.philscurrency.Philscurrency-Qt";
+        return @"com.philscurrency.Philscurrency-Qt";
     } else {
         return [self __bundleIdentifier];
     }

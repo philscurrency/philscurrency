@@ -1,0 +1,27 @@
+# /etc/conf.d/philscurrencyd: config file for /etc/init.d/philscurrencyd
+
+# Config file location
+#BITCOIND_CONFIGFILE="/etc/philscurrency/philscurrency.conf"
+
+# What directory to write pidfile to?  (created and owned by $BITCOIND_USER)
+#BITCOIND_PIDDIR="/var/run/philscurrencyd"
+
+# What filename to give the pidfile
+#BITCOIND_PIDFILE="${BITCOIND_PIDDIR}/philscurrencyd.pid"
+
+# Where to write philscurrencyd data (be mindful that the blockchain is large)
+#BITCOIND_DATADIR="/var/lib/philscurrencyd"
+
+# User and group to own philscurrencyd process
+#BITCOIND_USER="philscurrency"
+#BITCOIND_GROUP="philscurrency"
+
+# Path to philscurrencyd executable
+#BITCOIND_BIN="/usr/bin/philscurrencyd"
+
+# Nice value to run philscurrencyd under
+#BITCOIND_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+BITCOIND_OPTS="-disablewallet"
+

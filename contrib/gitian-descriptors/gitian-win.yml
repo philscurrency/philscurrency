@@ -18,6 +18,7 @@ packages:
 - "g++-mingw-w64"
 - "nsis"
 - "zip"
+- "curl"
 reference_datetime: "2016-01-01 00:00:00"
 remotes:
 - "url": "https://github.com/philscurrency/philscurrency.git"
@@ -26,7 +27,7 @@ files: []
 script: |
   WRAP_DIR=$HOME/wrapped
   HOSTS="x86_64-w64-mingw32 i686-w64-mingw32"
-  CONFIGFLAGS=""
+  CONFIGFLAGS="--enable-upnp-default"
   FAKETIME_HOST_PROGS="g++ ar ranlib nm windres strip"
   FAKETIME_PROGS="date makensis zip"
 

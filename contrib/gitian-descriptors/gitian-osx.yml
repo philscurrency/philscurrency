@@ -6,7 +6,7 @@ suites:
 architectures:
 - "amd64"
 packages: 
-- "g++"
+- "g++-multilib"
 - "git-core"
 - "pkg-config"
 - "autoconf2.13"
@@ -18,16 +18,17 @@ packages:
 - "libcap-dev"
 - "libz-dev"
 - "libbz2-dev"
+- "curl"
 reference_datetime: "2016-01-01 00:00:00"
 remotes:
 - "url": "https://github.com/philscurrency/philscurrency.git"
   "dir": "philscurrency"
 files:
-- "MacOSX10.9.sdk.tar.gz"
+- "MacOSX10.7.sdk.tar.gz"
 script: |
   WRAP_DIR=$HOME/wrapped
   HOSTS="x86_64-apple-darwin11"
-  CONFIGFLAGS="GENISOIMAGE=$WRAP_DIR/genisoimage"
+  CONFIGFLAGS="--enable-upnp-default GENISOIMAGE=$WRAP_DIR/genisoimage"
   FAKETIME_HOST_PROGS=""
   FAKETIME_PROGS="ar ranlib date dmg genisoimage"
 
@@ -72,7 +73,7 @@ script: |
   BASEPREFIX=`pwd`/depends
 
   mkdir -p ${BASEPREFIX}/SDKs
-  tar -C ${BASEPREFIX}/SDKs -xf ${BUILD_DIR}/MacOSX10.9.sdk.tar.gz
+  tar -C ${BASEPREFIX}/SDKs -xf ${BUILD_DIR}/MacOSX10.7.sdk.tar.gz
 
   # Build dependencies for each host
   for i in $HOSTS; do

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 #
-# Use the raw transactions API to spend bitcoins received on particular addresses,
+# Use the raw transactions API to spend philscurrencys received on particular addresses,
 # and send any change back to that same address.
 #
 # Example usage:
 #  spendfrom.py  # Lists available funds
 #  spendfrom.py --from=ADDRESS --to=ADDRESS --amount=11.00
 #
-# Assumes it will talk to a bitcoind or Bitcoin-Qt running
+# Assumes it will talk to a philscurrencyd or Philscurrency-Qt running
 # on localhost.
 #
 # Depends on jsonrpc
@@ -33,15 +33,15 @@ def check_json_precision():
         raise RuntimeError("JSON encode/decode loses precision")
 
 def determine_db_dir():
-    """Return the default location of the bitcoin data directory"""
+    """Return the default location of the philscurrency data directory"""
     if platform.system() == "Darwin":
-        return os.path.expanduser("~/Library/Application Support/Bitcoin/")
+        return os.path.expanduser("~/Library/Application Support/Philscurrency/")
     elif platform.system() == "Windows":
-        return os.path.join(os.environ['APPDATA'], "Bitcoin")
-    return os.path.expanduser("~/.bitcoin")
+        return os.path.join(os.environ['APPDATA'], "Philscurrency")
+    return os.path.expanduser("~/.philscurrency")
 
 def read_bitcoin_config(dbdir):
-    """Read the bitcoin.conf file from dbdir, returns dictionary of settings"""
+    """Read the philscurrency.conf file from dbdir, returns dictionary of settings"""
     from ConfigParser import SafeConfigParser
 
     class FakeSecHead(object):
@@ -59,20 +59,20 @@ def read_bitcoin_config(dbdir):
                 return s
 
     config_parser = SafeConfigParser()
-    config_parser.readfp(FakeSecHead(open(os.path.join(dbdir, "bitcoin.conf"))))
+    config_parser.readfp(FakeSecHead(open(os.path.join(dbdir, "philscurrency.conf"))))
     return dict(config_parser.items("all"))
 
 def connect_JSON(config):
-    """Connect to a bitcoin JSON-RPC server"""
+    """Connect to a philscurrency JSON-RPC server"""
     testnet = config.get('testnet', '0')
     testnet = (int(testnet) > 0)  # 0/1 in config file, convert to True/False
     if not 'rpcport' in config:
-        config['rpcport'] = 36004 if testnet else 36002
+        config['rpcport'] = 36004 if testnet else 9998
     connect = "http://%s:%s@127.0.0.1:%s"%(config['rpcuser'], config['rpcpassword'], config['rpcport'])
     try:
         result = ServiceProxy(connect)
         # ServiceProxy is lazy-connect, so send an RPC command mostly to catch connection errors,
-        # but also make sure the bitcoind we're talking to is/isn't testnet:
+        # but also make sure the philscurrencyd we're talking to is/isn't testnet:
         if result.getmininginfo()['testnet'] != testnet:
             sys.stderr.write("RPC server at "+connect+" testnet setting mismatch\n")
             sys.exit(1)
@@ -81,40 +81,40 @@ def connect_JSON(config):
         sys.stderr.write("Error connecting to RPC server at "+connect+"\n")
         sys.exit(1)
 
-def unlock_wallet(bitcoind):
-    info = bitcoind.getinfo()
+def unlock_wallet(philscurrencyd):
+    info = philscurrencyd.getinfo()
     if 'unlocked_until' not in info:
         return True # wallet is not encrypted
     t = int(info['unlocked_until'])
     if t <= time.time():
         try:
             passphrase = getpass.getpass("Wallet is locked; enter passphrase: ")
-            bitcoind.walletpassphrase(passphrase, 5)
+            philscurrencyd.walletpassphrase(passphrase, 5)
         except:
             sys.stderr.write("Wrong passphrase\n")
 
-    info = bitcoind.getinfo()
+    info = philscurrencyd.getinfo()
     return int(info['unlocked_until']) > time.time()
 
-def list_available(bitcoind):
+def list_available(philscurrencyd):
     address_summary = dict()
 
     address_to_account = dict()
-    for info in bitcoind.listreceivedbyaddress(0):
+    for info in philscurrencyd.listreceivedbyaddress(0):
         address_to_account[info["address"]] = info["account"]
 
-    unspent = bitcoind.listunspent(0)
+    unspent = philscurrencyd.listunspent(0)
     for output in unspent:
         # listunspent doesn't give addresses, so:
-        rawtx = bitcoind.getrawtransaction(output['txid'], 1)
+        rawtx = philscurrencyd.getrawtransaction(output['txid'], 1)
         vout = rawtx["vout"][output['vout']]
         pk = vout["scriptPubKey"]
 
-        # This code only deals with ordinary pay-to-bitcoin-address
+        # This code only deals with ordinary pay-to-philscurrency-address
         # or pay-to-script-hash outputs right now; anything exotic is ignored.
         if pk["type"] != "pubkeyhash" and pk["type"] != "scripthash":
             continue
-        
+
         address = pk["addresses"][0]
         if address in address_summary:
             address_summary[address]["total"] += vout["value"]
@@ -139,8 +139,8 @@ def select_coins(needed, inputs):
         n += 1
     return (outputs, have-needed)
 
-def create_tx(bitcoind, fromaddresses, toaddress, amount, fee):
-    all_coins = list_available(bitcoind)
+def create_tx(philscurrencyd, fromaddresses, toaddress, amount, fee):
+    all_coins = list_available(philscurrencyd)
 
     total_available = Decimal("0.0")
     needed = amount+fee
@@ -159,8 +159,8 @@ def create_tx(bitcoind, fromaddresses, toaddress, amount, fee):
     # Note:
     # Python's json/jsonrpc modules have inconsistent support for Decimal numbers.
     # Instead of wrestling with getting json.dumps() (used by jsonrpc) to encode
-    # Decimals, I'm casting amounts to float before sending them to bitcoind.
-    #  
+    # Decimals, I'm casting amounts to float before sending them to philscurrencyd.
+    #
     outputs = { toaddress : float(amount) }
     (inputs, change_amount) = select_coins(needed, potential_inputs)
     if change_amount > BASE_FEE:  # don't bother with zero or tiny change
@@ -170,8 +170,8 @@ def create_tx(bitcoind, fromaddresses, toaddress, amount, fee):
         else:
             outputs[change_address] = float(change_amount)
 
-    rawtx = bitcoind.createrawtransaction(inputs, outputs)
-    signed_rawtx = bitcoind.signrawtransaction(rawtx)
+    rawtx = philscurrencyd.createrawtransaction(inputs, outputs)
+    signed_rawtx = philscurrencyd.signrawtransaction(rawtx)
     if not signed_rawtx["complete"]:
         sys.stderr.write("signrawtransaction failed\n")
         sys.exit(1)
@@ -179,10 +179,10 @@ def create_tx(bitcoind, fromaddresses, toaddress, amount, fee):
 
     return txdata
 
-def compute_amount_in(bitcoind, txinfo):
+def compute_amount_in(philscurrencyd, txinfo):
     result = Decimal("0.0")
     for vin in txinfo['vin']:
-        in_info = bitcoind.getrawtransaction(vin['txid'], 1)
+        in_info = philscurrencyd.getrawtransaction(vin['txid'], 1)
         vout = in_info['vout'][vin['vout']]
         result = result + vout['value']
     return result
@@ -193,12 +193,12 @@ def compute_amount_out(txinfo):
         result = result + vout['value']
     return result
 
-def sanity_test_fee(bitcoind, txdata_hex, max_fee):
+def sanity_test_fee(philscurrencyd, txdata_hex, max_fee):
     class FeeError(RuntimeError):
         pass
     try:
-        txinfo = bitcoind.decoderawtransaction(txdata_hex)
-        total_in = compute_amount_in(bitcoind, txinfo)
+        txinfo = philscurrencyd.decoderawtransaction(txdata_hex)
+        total_in = compute_amount_in(philscurrencyd, txinfo)
         total_out = compute_amount_out(txinfo)
         if total_in-total_out > max_fee:
             raise FeeError("Rejecting transaction, unreasonable fee of "+str(total_in-total_out))
@@ -221,15 +221,15 @@ def main():
 
     parser = optparse.OptionParser(usage="%prog [options]")
     parser.add_option("--from", dest="fromaddresses", default=None,
-                      help="addresses to get bitcoins from")
+                      help="addresses to get philscurrencys from")
     parser.add_option("--to", dest="to", default=None,
-                      help="address to get send bitcoins to")
+                      help="address to get send philscurrencys to")
     parser.add_option("--amount", dest="amount", default=None,
                       help="amount to send")
     parser.add_option("--fee", dest="fee", default="0.0",
                       help="fee to include")
     parser.add_option("--datadir", dest="datadir", default=determine_db_dir(),
-                      help="location of bitcoin.conf file with RPC username/password (default: %default)")
+                      help="location of philscurrency.conf file with RPC username/password (default: %default)")
     parser.add_option("--testnet", dest="testnet", default=False, action="store_true",
                       help="Use the test network")
     parser.add_option("--dry_run", dest="dry_run", default=False, action="store_true",
@@ -240,10 +240,10 @@ def main():
     check_json_precision()
     config = read_bitcoin_config(options.datadir)
     if options.testnet: config['testnet'] = True
-    bitcoind = connect_JSON(config)
+    philscurrencyd = connect_JSON(config)
 
     if options.amount is None:
-        address_summary = list_available(bitcoind)
+        address_summary = list_available(philscurrencyd)
         for address,info in address_summary.iteritems():
             n_transactions = len(info['outputs'])
             if n_transactions > 1:
@@ -253,14 +253,14 @@ def main():
     else:
         fee = Decimal(options.fee)
         amount = Decimal(options.amount)
-        while unlock_wallet(bitcoind) == False:
+        while unlock_wallet(philscurrencyd) == False:
             pass # Keep asking for passphrase until they get it right
-        txdata = create_tx(bitcoind, options.fromaddresses.split(","), options.to, amount, fee)
-        sanity_test_fee(bitcoind, txdata, amount*Decimal("0.01"))
+        txdata = create_tx(philscurrencyd, options.fromaddresses.split(","), options.to, amount, fee)
+        sanity_test_fee(philscurrencyd, txdata, amount*Decimal("0.01"))
         if options.dry_run:
             print(txdata)
         else:
-            txid = bitcoind.sendrawtransaction(txdata)
+            txid = philscurrencyd.sendrawtransaction(txdata)
             print(txid)
 
 if __name__ == '__main__':

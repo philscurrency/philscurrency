@@ -34,8 +34,9 @@ generate one from the shell yourself like this:
 
 bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'
 
+Once you have a password in hand, set rpcpassword= in /etc/bitcoin/bitcoin.conf
 
-For an example configuration file that describes the configuration settings,
+For an example configuration file that describes the configuration settings, 
 see contrib/debian/examples/bitcoin.conf.
 
 3. Paths
@@ -80,11 +81,12 @@ Drop bitcoind.conf in /etc/init.  Test by running "service bitcoind start"
 it will automatically start on reboot.
 
 NOTE: This script is incompatible with CentOS 5 and Amazon Linux 2014 as they
-use old versions of Upstart and do not supply the start-stop-daemon utility.
+use old versions of Upstart and do not supply the start-stop-daemon uitility.
 
 5. Auto-respawn
 -----------------------------------
 
 Auto respawning is currently only configured for Upstart and systemd.
 Reasonable defaults have been chosen but YMMV.
+
 

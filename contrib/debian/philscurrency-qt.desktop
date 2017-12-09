@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Philscurrency
+Comment=Philscurrency P2P Cryptocurrency
+Comment[fr]=Philscurrency, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Philscurrency, eşten eşe kriptografik sanal para birimi
+Exec=philscurrency-qt %u
+Terminal=false
+Type=Application
+Icon=philscurrency128
+MimeType=x-scheme-handler/philscurrency;
+Categories=Office;Finance;
