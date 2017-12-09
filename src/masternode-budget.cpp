@@ -765,7 +765,7 @@ CAmount CBudgetManager::GetTotalBudget(int nHeight)
     if(chainActive.Tip() == NULL) return 0;
 
     //get min block value and calculate from that
-    CAmount nSubsidy = 50 * COIN;
+    CAmount nSubsidy = 0 * COIN;
 
     int halvings = nHeight / Params().SubsidyHalvingInterval();
 
