@@ -160,7 +160,7 @@ public:
         strSporkKey = "045fdc1d5796a4cc3ec7b93de854747f91ac8c44b150a37a45fe7b115e19463f902639ac385a7262423d5ac2e5fcea81a403525b25e56c6ff6d6020ff97b9bff57";
         strMasternodePaymentsPubKey = "049484542a6a421df34eec30f83b59cdc6ba468fe8d5a306faddb600ceb5b5cfe612eedad016275a0caf5c9c0db69974de9fc6127c74bc69768329c4ff9522c1cf";
         strDarksendPoolDummyAddress = "Pq19GqFvajRrEdDHYRKGYjTsQfpV5jyipF";
-        nStartMasternodePayments = 1513382400; //December 16, 2017 12:00:00 AM GMT+00:00
+        nStartMasternodePayments = 1403728576; //Wed, 25 Jun 2014 20:36:16 GMT
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const 
