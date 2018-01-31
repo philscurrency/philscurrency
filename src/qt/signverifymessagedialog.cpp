@@ -122,7 +122,7 @@ void SignVerifyMessageDialog::on_signMessageButton_SM_clicked()
         return;
     }
 
-    WalletModel::UnlockContext ctx(model->requestUnlock(true));
+    WalletModel::UnlockContext ctx(model->requestUnlock());
     if (!ctx.isValid())
     {
         ui->statusLabel_SM->setStyleSheet("QLabel { color: red; }");
