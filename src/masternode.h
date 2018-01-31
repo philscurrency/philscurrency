@@ -130,6 +130,7 @@ public:
     bool unitTest;
     bool allowFreeTx;
     int protocolVersion;
+    int nActiveState;
     int64_t nLastDsq; //the dsq count from the last dsq broadcast of this node
     int nScanningErrorCount;
     int nLastScanningErrorBlockHeight;
@@ -255,6 +256,8 @@ public:
         return cacheInputAge+(chainActive.Tip()->nHeight-cacheInputAgeBlock);
     }
 
+    std::string GetStatus();
+
     std::string Status() {
         std::string strStatus = "ACTIVE";
 
@@ -268,7 +271,7 @@ public:
     }
 
     int64_t GetLastPaid();
-
+    bool IsValidNetAddr();
 };
 
 
@@ -310,6 +313,9 @@ public:
         return ss.GetHash();
     }
 
+    /// Create Masternode broadcast, needs to be relayed manually after that
+    static bool Create(CTxIn vin, CService service, CKey keyCollateralAddressNew, CPubKey pubKeyCollateralAddressNew, CKey keyMasternodeNew, CPubKey pubKeyMasternodeNew, std::string& strErrorRet, CMasternodeBroadcast& mnbRet);
+    static bool Create(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& strErrorRet, CMasternodeBroadcast& mnbRet, bool fOffline = false);
 };
 
 #endif
