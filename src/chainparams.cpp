@@ -134,9 +134,10 @@ public:
         assert(hashGenesisBlock == uint256("0xe37bd4c37400b27f681015c323c30ac328f023bcfd0baf3610a7f8315f1beccf"));
         assert(genesis.hashMerkleRoot == uint256("0xff77c540c7869f67f52fd9a811c7c0bd269b316a9f293e51470c5e0883e251d2"));
 
-        vSeeds.push_back(CDNSSeedData("52.14.182.71", "52.14.182.71"));
-        vSeeds.push_back(CDNSSeedData("13.59.107.218", "13.59.107.218"));
-        vSeeds.push_back(CDNSSeedData("52.14.113.155", "52.14.113.155"));
+        vSeeds.push_back(CDNSSeedData("philscurrency.org", "dnsseed1.philscurrency.org"));
+        vSeeds.push_back(CDNSSeedData("philscurrency.org", "dnsseed2.philscurrency.org"));
+        vSeeds.push_back(CDNSSeedData("philscurrency.org", "dnsseed3.philscurrency.org"));
+        vSeeds.push_back(CDNSSeedData("philscurrency.org", "explorer.philscurrency.org"));
         
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(56);
