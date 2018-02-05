@@ -134,9 +134,9 @@ rm SHA256SUMS
 - Upload zips and installers, as well as `SHA256SUMS.asc` from last step, to the bitcoin.org server
   into `/var/www/bin/bitcoin-core-${VERSION}`
 
-- Update philscurrency.com version ***TODO***
+- Update philscurrency.org version ***TODO***
 
-  - First, check to see if the philscurrency.com maintainers have prepared a
+  - First, check to see if the philscurrency.org maintainers have prepared a
     release: https://github.com/bitcoin/bitcoin.org/labels/Releases
 
       - If they have, it will have previously failed their Travis CI

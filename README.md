@@ -2,7 +2,7 @@ Philscurrency Core
 ===============================
 
 
-https://www.philscurrency.com
+https://www.philscurrency.org
 
 Copyright (c) 2009-2015 Bitcoin Core Developers
 
@@ -23,7 +23,7 @@ are carried out collectively by the network. Philscurrency Core is the name of o
 source software which enables the use of this currency.
 
 For more information, as well as an immediately useable, binary version of
-the Philscurrency Core software, see https://www.philscurrency.com
+the Philscurrency Core software, see https://www.philscurrency.org
 
 
 License

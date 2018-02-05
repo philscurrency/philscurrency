@@ -37,8 +37,7 @@ CActiveMasternode activeMasternode;
 
 /* *** BEGIN DARKSEND MAGIC - DASH **********
     Copyright (c) 2014-2015, The Dash Developers
-        eduffield - evan@philscurrency.com
-        udjinm6   - udjinm6@philscurrency.com
+
 */
 
 void CDarksendPool::ProcessMessageDarksend(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)

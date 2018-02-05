@@ -46,7 +46,7 @@ static const int MAX_URI_LENGTH = 255;
 #define SPINNER_FRAMES 35
 
 #define QAPP_ORG_NAME "Philscurrency"
-#define QAPP_ORG_DOMAIN "philscurrency.com"
+#define QAPP_ORG_DOMAIN "philscurrency.org"
 #define QAPP_APP_NAME_DEFAULT "Philscurrency-Qt"
 #define QAPP_APP_NAME_TESTNET "Philscurrency-Qt-testnet"
 
