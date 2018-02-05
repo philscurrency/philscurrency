@@ -1,5 +1,5 @@
 ---
-name: "philscurrency-linux-0.10"
+name: "philscurrency-linux-1.0.0.1"
 enable_cache: true
 suites:
 - "precise"

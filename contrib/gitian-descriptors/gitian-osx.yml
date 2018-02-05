@@ -1,5 +1,5 @@
 ---
-name: "philscurrency-osx-0.10"
+name: "philscurrency-osx-1.0.0.1"
 enable_cache: true
 suites:
 - "precise"
