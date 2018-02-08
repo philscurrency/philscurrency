@@ -47,6 +47,7 @@ private:
 public Q_SLOTS:
     void updateMyMasternodeInfo(QString strAlias, QString strAddr, CMasternode* pmn);
     void updateMyNodeList(bool fForce = false);
+    void updateNodeList();
 
 Q_SIGNALS:
 
@@ -61,7 +62,7 @@ private:
 
     // Protects tableWidgetMyMasternodes
     CCriticalSection cs_mymnlist;
-
+    CCriticalSection cs_mnlistupdate;
     QString strCurrentFilter;
 
 private Q_SLOTS:
