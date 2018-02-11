@@ -43,6 +43,7 @@ public:
         ThreadsScriptVerif,     // int
         DatabaseCache,          // int
         SpendZeroConfChange,    // bool
+        ShowMasternodesTab,  // bool
         DarksendRounds,    // int
         AnonymizeDarkcoinAmount, //int
         Listen,                 // bool
