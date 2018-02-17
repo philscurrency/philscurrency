@@ -7,6 +7,7 @@
 #define BITCOIN_PRIMITIVES_BLOCK_H
 
 #include "primitives/transaction.h"
+#include "keystore.h"
 #include "serialize.h"
 #include "uint256.h"
 
@@ -82,6 +83,9 @@ public:
     // network and disk
     std::vector<CTransaction> vtx;
 
+    // ppcoin: block signature - signed by one of the coin base txout[N]'s owner
+    std::vector<unsigned char> vchBlockSig;
+
     // memory only
     mutable CScript payee;
     mutable std::vector<uint256> vMerkleTree;
@@ -111,6 +115,7 @@ public:
         vtx.clear();
         vMerkleTree.clear();
         payee = CScript();
+        vchBlockSig.clear();
     }
 
     CBlockHeader GetBlockHeader() const
@@ -123,6 +128,25 @@ public:
         block.nBits          = nBits;
         block.nNonce         = nNonce;
         return block;
+    }
+
+    // ppcoin: two types of block: proof-of-work or proof-of-stake
+    bool IsProofOfStake() const
+    {
+        return (vtx.size() > 1 && vtx[1].IsCoinStake());
+    }
+
+    bool IsProofOfWork() const
+    {
+        return !IsProofOfStake();
+    }
+
+    bool SignBlock(const CKeyStore& keystore);
+    bool CheckBlockSignature() const;
+
+    std::pair<COutPoint, unsigned int> GetProofOfStake() const
+    {
+        return IsProofOfStake()? std::make_pair(vtx[1].vin[0].prevout, nTime) : std::make_pair(COutPoint(), (unsigned int)0);
     }
 
     // Build the in-memory merkle tree for this block and return the merkle root.

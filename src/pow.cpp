@@ -7,11 +7,12 @@
 
 #include "chain.h"
 #include "chainparams.h"
+#include "main.h"
 #include "primitives/block.h"
 #include "uint256.h"
 #include "util.h"
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, bool fProofOfStake)
 {
     unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit().GetCompact();
 
@@ -39,6 +40,36 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
             }
         }
         return pindexLast->nBits;
+    }
+
+    if(chainActive.Tip()->nHeight > LAST_POW_BLOCK)
+    {
+        const CBlockIndex* pindexPrev = chainActive.Tip();
+        uint256 bnTargetLimit = (~uint256(0) >> 24);
+        int64_t nTargetSpacing = 60;
+        int64_t nTargetTimespan = 60*40;
+
+        int64_t nActualSpacing = 0;
+        if(pindexPrev->nHeight != 0)
+            nActualSpacing = pindexPrev->GetBlockTime() - pindexPrev->pprev->GetBlockTime();
+
+
+        if (nActualSpacing < 0)
+            nActualSpacing = 1;
+
+        // ppcoin: target change every block
+        // ppcoin: retarget with exponential moving toward target spacing
+        uint256 bnNew;
+        bnNew.SetCompact(pindexPrev->nBits);
+
+        int64_t nInterval = nTargetTimespan / nTargetSpacing;
+        bnNew *= ((nInterval - 1) * nTargetSpacing + nActualSpacing + nActualSpacing);
+        bnNew /= ((nInterval + 1) * nTargetSpacing);
+
+        if (bnNew <= 0 || bnNew > bnTargetLimit)
+            bnNew = bnTargetLimit;
+
+        return bnNew.GetCompact();
     }
 
     // Philscurrency: This fixes an issue where a 51% attack can change difficulty at will.
