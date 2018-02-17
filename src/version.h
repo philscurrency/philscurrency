@@ -20,6 +20,7 @@ static const int GETHEADERS_VERSION = 70002;
 
 //! disconnect from peers older than this proto version
 static const int MIN_PEER_PROTO_VERSION = 70002;
+static const int MIN_PEER_PROTO_VERSION_POS = 70005;
 
 //! minimum peer version accepted by DarksendPool
 static const int MIN_POOL_PEER_PROTO_VERSION = 70003;

@@ -609,6 +609,7 @@ void BitcoinMiner(CWallet *pwallet, bool fProofOfStake)
                         }
                     }
                 }
+            }
 
                 // Check for stop or if block needs to be rebuilt
                 boost::this_thread::interruption_point();
@@ -628,8 +629,7 @@ void BitcoinMiner(CWallet *pwallet, bool fProofOfStake)
                 {
                     // Changing pblock->nTime can change work required on testnet:
                     hashTarget.SetCompact(pblock->nBits);
-                }
-            }
+            
         }
     }
 }
