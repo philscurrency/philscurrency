@@ -384,7 +384,7 @@ bool CBudgetManager::AddProposal(CBudgetProposal& budgetProposal)
     LOCK(cs);
     std::string strError = "";
     if(!budgetProposal.IsValid(strError)) {
-        LogPrintf("CBudgetManager::AddProposal - invalid budget proposal - %s\n", strError);
+        //LogPrintf("CBudgetManager::AddProposal - invalid budget proposal - %s\n", strError);
         return false;
     }
 
@@ -398,7 +398,7 @@ bool CBudgetManager::AddProposal(CBudgetProposal& budgetProposal)
 
 void CBudgetManager::CheckAndRemove()
 {
-    LogPrintf("CBudgetManager::CheckAndRemove\n");
+    LogPrintf("CBudgetManager::CheckAndRemove \n");
 
     std::string strError = "";
 
@@ -952,7 +952,7 @@ void CBudgetManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         mapSeenMasternodeBudgetProposals.insert(make_pair(budgetProposalBroadcast.GetHash(), budgetProposalBroadcast));
 
         if(!budgetProposalBroadcast.IsValid(strError)) {
-            LogPrintf("mprop - invalid budget proposal - %s\n", strError);
+            //LogPrintf("mprop - invalid budget proposal - %s\n", strError);
             return;
         }
 
@@ -960,7 +960,7 @@ void CBudgetManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
         if(AddProposal(budgetProposal)) {budgetProposalBroadcast.Relay();}
         masternodeSync.AddedBudgetItem(budgetProposalBroadcast.GetHash());
 
-        LogPrintf("mprop - new budget - %s\n", budgetProposalBroadcast.GetHash().ToString());
+        //LogPrintf("mprop - new budget - %s\n", budgetProposalBroadcast.GetHash().ToString());
 
         //We might have active votes for this proposal that are valid now
         CheckOrphanVotes();
@@ -986,7 +986,7 @@ void CBudgetManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
 
         mapSeenMasternodeBudgetVotes.insert(make_pair(vote.GetHash(), vote));
         if(!vote.SignatureValid(true)){
-            LogPrintf("mvote - signature invalid\n");
+            //LogPrintf("mvote - signature invalid\n");
             if(masternodeSync.IsSynced()) Misbehaving(pfrom->GetId(), 20);
             // it could just be a non-synced masternode
             mnodeman.AskForMN(pfrom, vote.vin);
@@ -999,7 +999,7 @@ void CBudgetManager::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             masternodeSync.AddedBudgetItem(vote.GetHash());
         }
 
-        LogPrintf("mvote - new budget vote - %s\n", vote.GetHash().ToString());
+        //LogPrintf("mvote - new budget vote - %s\n", vote.GetHash().ToString());
     }
 
     if (strCommand == "fbs") { //Finalized Budget Suggestion

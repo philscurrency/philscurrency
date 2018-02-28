@@ -1609,14 +1609,21 @@ bool CWallet::SelectStakeCoins(std::set<std::pair<const CWalletTx*,unsigned int>
     
     BOOST_FOREACH(const COutput& out, vCoins)
     {
-        if(nAmountSelected + out.tx->vout[out.i].nValue < nTargetAmount)
-        {
-            if(GetTime() - out.tx->GetTxTime() > nStakeMinAge)
-            {
-                setCoins.insert(make_pair(out.tx, out.i));
-                nAmountSelected += out.tx->vout[out.i].nValue;
-            }
-        }
+        //make sure not to outrun target amount
+        if(nAmountSelected + out.tx->vout[out.i].nValue > nTargetAmount)
+            continue;
+        
+        //check for min age
+        if(GetTime() - out.tx->GetTxTime() < nStakeMinAge)
+            continue;
+
+        //check that it is matured
+        if(out.nDepth < (out.tx->IsCoinStake() ? COINBASE_MATURITY : 10))
+            continue;
+
+        //add to our stake set
+        setCoins.insert(make_pair(out.tx, out.i));
+        nAmountSelected += out.tx->vout[out.i].nValue;
     }
     return true;
 }
@@ -2387,7 +2394,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
     //prevent staking a time that won't be accepted
     if(GetAdjustedTime() <= chainActive.Tip()->nTime)
-        MilliSleep(2000);
+        MilliSleep(10000);
 
     BOOST_FOREACH(PAIRTYPE(const CWalletTx*, unsigned int) pcoin, setStakeCoins)
     {
