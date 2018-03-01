@@ -181,13 +181,13 @@ bool CWalletDB::EraseMultiSend(std::vector<std::pair<std::string, int> > vMultiS
     return ret;
 }
 //presstab HyperStake
-bool CWalletDB::WriteMSettings(bool fEnable, int nLastMultiSendHeight)
+bool CWalletDB::WriteMSettings(bool fMultiSendStake, bool fMultiSendMasternode, int nLastMultiSendHeight)
 {
     nWalletDBUpdated++;
-    std::pair<bool, int> pSettings;
-    pSettings.first = fEnable;
-    pSettings.second = nLastMultiSendHeight;
-    return Write(std::string("msettings"), pSettings, true);
+    std::pair<bool, bool> enabledMS(fMultiSendStake, fMultiSendMasternode);
+    std::pair<std::pair<bool, bool>, int> pSettings(enabledMS, nLastMultiSendHeight);
+
+    return Write(std::string("msettingsv2"), pSettings, true);
 }
 //presstab HyperStake
 bool CWalletDB::WriteMSDisabledAddresses(std::vector<std::string> vDisabledAddresses)
@@ -212,6 +212,14 @@ bool CWalletDB::EraseMSDisabledAddresses(std::vector<std::string> vDisabledAddre
             ret = false;
     }
     return ret;
+}
+bool CWalletDB::WriteAutoCombineSettings(bool fEnable, CAmount nCombineThreshold)
+{
+    nWalletDBUpdated++;
+    std::pair<bool, CAmount> pSettings;
+    pSettings.first = fEnable;
+    pSettings.second = nCombineThreshold;
+    return Write(std::string("autocombinesettings"), pSettings, true);
 }
 
 bool CWalletDB::WriteDefaultKey(const CPubKey& vchPubKey)
@@ -651,7 +659,39 @@ ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
 	else if (strType == "stakeSplitThreshold") //presstab HyperStake
 	{
             ssValue >> pwallet->nStakeSplitThreshold;
-	}
+        }
+        else if (strType == "multisend") //presstab HyperStake
+        {
+            unsigned int i;
+            ssKey >> i;
+            std::pair<std::string, int> pMultiSend;
+            ssValue >> pMultiSend;
+            if(CBitcoinAddress(pMultiSend.first).IsValid())
+            {
+                pwallet->vMultiSend.push_back(pMultiSend);
+            }
+        }
+        else if(strType == "msettingsv2")//presstab HyperStake
+        {
+            std::pair<std::pair<bool, bool>, int> pSettings;
+            ssValue >> pSettings;
+            pwallet->fMultiSendStake = pSettings.first.first;
+            pwallet->fMultiSendMasternodeReward = pSettings.first.second;
+            pwallet->nLastMultiSendHeight = pSettings.second;
+        }
+        else if(strType == "mdisabled")//presstab HyperStake
+        {
+            std::string strDisabledAddress;
+            ssValue >> strDisabledAddress;
+            pwallet->vDisabledAddresses.push_back(strDisabledAddress);
+        }
+        else if(strType == "autocombinesettings")
+        {
+            std::pair<bool, CAmount> pSettings;
+            ssValue >> pSettings;
+            pwallet->fCombineDust = pSettings.first;
+            pwallet->nAutoCombineThreshold = pSettings.second;
+        }
         else if (strType == "destdata")
         {
             std::string strAddress, strKey, strValue;

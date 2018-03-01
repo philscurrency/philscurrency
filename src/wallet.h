@@ -185,15 +185,19 @@ public:
     unsigned int nHashInterval;
     uint64_t nStakeSplitThreshold;
     int nStakeSetUpdateTime;
-    bool fCombineDust;
 
     //MultiSend
     std::vector<std::pair<std::string, int> > vMultiSend;
-    bool fMultiSend;
+    bool fMultiSendStake;
+    bool fMultiSendMasternodeReward;
     bool fMultiSendNotify;
     std::string strMultiSendChangeAddress;
     int nLastMultiSendHeight;
     std::vector<std::string> vDisabledAddresses;
+
+    //Auto Combine Inputs
+    bool fCombineDust;
+    CAmount nAutoCombineThreshold;
 
     CWallet()
     {
@@ -235,11 +239,27 @@ public:
 
         //MultiSend
         vMultiSend.clear();
-        fMultiSend = false;
+        fMultiSendStake = false;
+        fMultiSendMasternodeReward = false;
         fMultiSendNotify = false;
         strMultiSendChangeAddress = "";
         nLastMultiSendHeight = 0;
         vDisabledAddresses.clear();
+
+        //Auto Combine Dust
+        fCombineDust = false;
+        nAutoCombineThreshold = 0;
+    }
+
+    bool isMultiSendEnabled()
+    {
+        return fMultiSendMasternodeReward || fMultiSendStake;
+    }
+
+    void setMultiSendDisabled()
+    {
+        fMultiSendMasternodeReward = false;
+        fMultiSendStake = false;
     }
 
     std::map<uint256, CWalletTx> mapWallet;
@@ -261,6 +281,7 @@ public:
     bool CanSupportFeature(enum WalletFeature wf) { AssertLockHeld(cs_wallet); return nWalletMaxVersion >= wf; }
 
     void AvailableCoins(std::vector<COutput>& vCoins, bool fOnlyConfirmed=true, const CCoinControl *coinControl = NULL, AvailableCoinsType coin_type=ALL_COINS, bool useIX = false) const;
+    std::map<CBitcoinAddress, std::vector<COutput> > AvailableCoinsByAddress(bool fConfirmed = true, CAmount maxCoinValue = 0);
     bool SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int nConfTheirs, std::vector<COutput> vCoins, std::set<std::pair<const CWalletTx*,unsigned int> >& setCoinsRet, CAmount& nValueRet) const;
 
     bool IsSpent(const uint256& hash, unsigned int n) const;
@@ -360,6 +381,7 @@ public:
     bool ConvertList(std::vector<CTxIn> vCoins, std::vector<int64_t>& vecAmounts);
     bool CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int64_t nSearchInterval, CMutableTransaction& txNew, unsigned int& nTxNewTime);
     bool MultiSend();
+    void AutoCombineDust();
 
     static CFeeRate minTxFee;
     static CAmount GetMinimumFee(unsigned int nTxBytes, unsigned int nConfirmTarget, const CTxMemPool& pool);
@@ -1154,6 +1176,11 @@ public:
 
         //nondenom return largest first
         return -(tx->vout[i].nValue/COIN);
+    }
+
+    CAmount Value() const
+    {
+        return tx->vout[i].nValue;
     }
 
     std::string ToString() const;

@@ -3476,10 +3476,13 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDis
         }
     }
 
-    // If turned on MultiSend will send a transaction (or more) on the 30th confirmation of a stake
-     if (pwalletMain->fMultiSend)
-        if (!pwalletMain->MultiSend() )
-            LogPrintf("ERROR While trying to use MultiSend \n");
+    // If turned on MultiSend will send a transaction (or more) on the after maturity of a stake
+     if (pwalletMain->isMultiSendEnabled())
+        pwalletMain->MultiSend();
+
+     //If turned on Auto Combine will scan wallet for dust to combine
+     if(pwalletMain->fCombineDust)
+         pwalletMain->AutoCombineDust();
 
 
     LogPrintf("%s : ACCEPTED\n", __func__);

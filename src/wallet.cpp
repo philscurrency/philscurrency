@@ -1537,6 +1537,27 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
     }
 }
 
+map<CBitcoinAddress, vector<COutput> > CWallet::AvailableCoinsByAddress(bool fConfirmed, CAmount maxCoinValue)
+{
+    vector<COutput> vCoins;
+    AvailableCoins(vCoins, fConfirmed);
+
+    map<CBitcoinAddress, vector<COutput> > mapCoins;
+    BOOST_FOREACH(COutput out, vCoins)
+    {
+        if(maxCoinValue > 0 && out.tx->vout[out.i].nValue > maxCoinValue)
+            continue;
+
+        CTxDestination address;
+        if(!ExtractDestination(out.tx->vout[out.i].scriptPubKey, address))
+            continue;
+
+        mapCoins[CBitcoinAddress(address)].push_back(out);
+    }
+
+    return mapCoins;
+}
+
 static void ApproximateBestSubset(vector<pair<CAmount, pair<const CWalletTx*,unsigned int> > >vValue, const CAmount& nTotalLower, const CAmount& nTargetValue,
                                   vector<char>& vfBest, CAmount& nBest, int iterations = 1000)
 {
@@ -3409,39 +3430,130 @@ bool CWallet::GetDestData(const CTxDestination &dest, const std::string &key, st
     return false;
 }
 
-bool CWallet::MultiSend()
+void CWallet::AutoCombineDust()
 {
-    if ( IsInitialBlockDownload() || IsLocked() )
-        return false;
-
-    int64_t nAmount = 0;
+    if (IsInitialBlockDownload() || IsLocked())
     {
-        LOCK(cs_wallet);
-        std::vector<COutput> vCoins;
-        AvailableCoins(vCoins);
+        return;
+    }
+
+    map<CBitcoinAddress, vector<COutput> > mapCoinsByAddress = AvailableCoinsByAddress(true, 0);
+
+    //coins are sectioned by address. This combination code only wants to combine inputs that belong to the same address
+    for(map<CBitcoinAddress, vector<COutput> >::iterator it = mapCoinsByAddress.begin(); it != mapCoinsByAddress.end(); it++)
+    {
+        vector<COutput> vCoins, vRewardCoins;
+        vCoins= it->second;
+
+        //find masternode rewards that need to be combined
+        CCoinControl* coinControl = new CCoinControl();
+        CAmount nTotalRewardsValue = 0;
         BOOST_FOREACH(const COutput& out, vCoins)
         {
-            CTxDestination address;
-            if(!ExtractDestination(out.tx->vout[out.i].scriptPubKey, address))
+            //no coins should get this far if they dont have proper maturity, this is double checking
+            if(out.tx->IsCoinStake() && out.tx->GetDepthInMainChain() < COINBASE_MATURITY + 1)
                 continue;
 
-            if (chainActive.Tip()->nHeight <= nLastMultiSendHeight )
-                return false;
+            if(out.Value() > nAutoCombineThreshold * COIN)
+                continue;
 
-            if (!(out.tx->IsCoinStake() && out.tx->GetBlocksToMaturity() == 0 && out.tx->GetDepthInMainChain() == COINBASE_MATURITY + 1))
-                return false;
+            COutPoint outpt(out.tx->GetHash(), out.i);
+            coinControl->Select(outpt);
+            vRewardCoins.push_back(out);
+            nTotalRewardsValue += out.Value();
+        }
 
-            //Disabled Addresses won't send MultiSend transactions
-            if(vDisabledAddresses.size() > 0)
+        //if no inputs found then return
+        if(!coinControl->HasSelected())
+            continue;
+
+        //we cannot combine one coin with itself
+        if(vRewardCoins.size() <= 1)
+            continue;
+
+        vector<pair<CScript, int64_t> > vecSend;
+        CScript scriptPubKey = GetScriptForDestination(it->first.Get());
+        vecSend.push_back(make_pair(scriptPubKey, nTotalRewardsValue));
+
+        // Create the transaction and commit it to the network
+        CWalletTx wtx;
+        CReserveKey keyChange(this); // this change address does not end up being used, because change is returned with coin control switch
+        string strErr;
+        int64_t nFeeRet = 0;
+
+        //get the fee amount
+        CWalletTx wtxdummy;
+        CreateTransaction(vecSend, wtxdummy, keyChange, nFeeRet, strErr, coinControl, ALL_COINS, false, CAmount(0));
+        vecSend[0].second = nTotalRewardsValue - nFeeRet - 500;
+
+        if (!CreateTransaction(vecSend, wtx, keyChange, nFeeRet, strErr, coinControl, ALL_COINS, false, CAmount(0)))
+        {
+            LogPrintf("AutoCombineDust createtransaction failed, reason: %s\n", strErr);
+            continue;
+        }
+
+        if(!CommitTransaction(wtx, keyChange))
+        {
+            LogPrintf("AutoCombineDust transaction commit failed\n");
+            continue;
+        }
+
+        LogPrintf("AutoCombineDust sent transaction\n");
+
+        delete coinControl;
+    }
+
+}
+
+bool CWallet::MultiSend()
+{
+    if (IsInitialBlockDownload() || IsLocked())
+    {
+        return false;
+    }
+
+    if (chainActive.Tip()->nHeight <= nLastMultiSendHeight)
+    {
+        LogPrintf("Multisend: lastmultisendheight is higher than current best height\n");
+        return false;
+    }
+
+    std::vector<COutput> vCoins;
+    AvailableCoins(vCoins);
+    int stakeSent = 0;
+    int mnSent = 0;
+    BOOST_FOREACH(const COutput& out, vCoins)
+    {
+        //need output with precise confirm count - this is how we identify which is the output to send
+        if(out.tx->GetDepthInMainChain() != COINBASE_MATURITY + 1)
+            continue;
+
+        COutPoint outpoint(out.tx->GetHash(), out.i);
+        bool sendMSonMNReward = fMultiSendMasternodeReward && outpoint.IsMasternodeReward(out.tx);
+        bool sendMSOnStake = fMultiSendStake && out.tx->IsCoinStake() && !sendMSonMNReward; //output is either mnreward or stake reward, not both
+
+        if(!(sendMSOnStake || sendMSonMNReward))
+            continue;
+
+        CTxDestination address;
+        if(!ExtractDestination(out.tx->vout[out.i].scriptPubKey, address))
+        {
+            LogPrintf("Multisend: failed to extract destination\n");
+            continue;
+        }
+
+        //Disabled Addresses won't send MultiSend transactions
+        if(vDisabledAddresses.size() > 0)
+        {
+            for(unsigned int i = 0; i < vDisabledAddresses.size(); i++)
             {
-                for(unsigned int i = 0; i < vDisabledAddresses.size(); i++)
+                if(vDisabledAddresses[i] == CBitcoinAddress(address).ToString())
                 {
-                    if(vDisabledAddresses[i] == CBitcoinAddress(address).ToString())
-                    {
-                        return false;
-                    }
+                    LogPrintf("Multisend: disabled address preventing multisend\n");
+                    return false;
                 }
             }
+        }
 
             // create new coin control, populate it with the selected utxo, create sending vector
             CCoinControl* cControl = new CCoinControl();
@@ -3455,6 +3567,7 @@ bool CWallet::MultiSend()
 
             // loop through multisend vector and add amounts and addresses to the sending vector
             const isminefilter filter = ISMINE_SPENDABLE;
+        int64_t nAmount = 0;
             for(unsigned int i = 0; i < vMultiSend.size(); i++)
             {
                 // MultiSend vector is a pair of 1)Address as a std::string 2) Percent of stake to send as an int
@@ -3465,24 +3578,45 @@ bool CWallet::MultiSend()
                 vecSend.push_back(make_pair(scriptPubKey, nAmount));
             }
 
-            // Create the transaction and commit it to the network
-            string strErr;
-            if (!CreateTransaction(vecSend, wtx, keyChange, nFeeRet, strErr, cControl, ALL_COINS, false, CAmount(0)))
-                LogPrintf("MultiSend createtransaction failed\n");
-
-            if(!CommitTransaction(wtx, keyChange))
-                LogPrintf("MultiSend transaction commit failed\n");
-            else
-                fMultiSendNotify = true;
-            delete cControl;
-
-            //write nLastMultiSendHeight to DB
-            CWalletDB walletdb(strWalletFile);
-            nLastMultiSendHeight = chainActive.Tip()->nHeight;
-            if(!walletdb.WriteMSettings(fMultiSend, nLastMultiSendHeight))
-                LogPrintf("Failed to write MultiSend setting to DB\n");
+        // Create the transaction and commit it to the network
+        string strErr;
+        if (!CreateTransaction(vecSend, wtx, keyChange, nFeeRet, strErr, cControl, ALL_COINS, false, CAmount(0)))
+        {
+            LogPrintf("MultiSend createtransaction failed\n");
+            return false;
         }
+
+        if(!CommitTransaction(wtx, keyChange))
+        {
+            LogPrintf("MultiSend transaction commit failed\n");
+            return false;
+        }
+        else
+            fMultiSendNotify = true;
+
+        delete cControl;
+
+        //write nLastMultiSendHeight to DB
+        CWalletDB walletdb(strWalletFile);
+        nLastMultiSendHeight = chainActive.Tip()->nHeight;
+        if(!walletdb.WriteMSettings(fMultiSendStake, fMultiSendMasternodeReward, nLastMultiSendHeight))
+            LogPrintf("Failed to write MultiSend setting to DB\n");
+
+        LogPrintf("MultiSend successfully sent\n");
+        if(sendMSOnStake)
+            stakeSent++;
+        else
+            mnSent++;
+
+        //stop iterating if we are done
+        if(mnSent > 0 && stakeSent > 0)
+            return true;
+        if(stakeSent > 0 && !fMultiSendMasternodeReward)
+            return true;
+        if(mnSent > 0 && !fMultiSendStake)
+            return true;
     }
+
     return true;
 }
 
