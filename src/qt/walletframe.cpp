@@ -147,6 +147,15 @@ void WalletFrame::gotoVerifyMessageTab(QString addr)
         walletView->gotoVerifyMessageTab(addr);
 }
 
+void WalletFrame::gotoMultiSendDialog()
+{
+    WalletView *walletView = currentWalletView();
+
+    if(walletView)
+        walletView->gotoMultiSendDialog();
+}
+
+
 void WalletFrame::encryptWallet(bool status)
 {
     WalletView *walletView = currentWalletView();
@@ -200,4 +209,3 @@ WalletView *WalletFrame::currentWalletView()
 {
     return qobject_cast<WalletView*>(walletStack->currentWidget());
 }
-

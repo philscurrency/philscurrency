@@ -66,6 +66,8 @@ public:
     void removeAllWallets();
 #endif // ENABLE_WALLET
     bool enableWallet;
+    bool fMultiSend;
+    bool fMultiSendNotify;
 
 protected:
     void changeEvent(QEvent *e);
@@ -115,6 +117,7 @@ private:
     QAction *showBackupsAction;
     QAction *openAction;
     QAction *showHelpMessageAction;
+    QAction *multiSendAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
@@ -197,9 +200,12 @@ private slots:
     void gotoSignMessageTab(QString addr = "");
     /** Show Sign/Verify Message dialog and switch to verify message tab */
     void gotoVerifyMessageTab(QString addr = "");
+    /** Show MultiSend Dialog */
+    void gotoMultiSendDialog();
 
     /** Show open dialog */
     void openClicked();
+
 #endif // ENABLE_WALLET
     /** Show configuration dialog */
     void optionsClicked();

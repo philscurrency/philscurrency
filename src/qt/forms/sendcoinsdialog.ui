@@ -594,7 +594,7 @@
           <item>
            <widget class="QLabel" name="labelBlockSize">
             <property name="text">
-             <string>0 DNET</string>
+             <string>0 PHILS</string>
             </property>
            </widget>
           </item>
