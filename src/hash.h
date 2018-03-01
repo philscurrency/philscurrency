@@ -14,6 +14,11 @@
 #include "version.h"
 
 #include <vector>
+#include <sstream>
+#include <iomanip>
+#include <openssl/sha.h>
+
+using namespace std;
 
 /** A hasher class for Bitcoin's 256-bit hash (double SHA-256). */
 class CHash256 {
@@ -62,6 +67,31 @@ public:
         return *this;
     }
 };
+
+/** Compute the 256-bit hash of a std::string */
+inline std::string Hash(std::string input)
+{
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, input.c_str(), input.size());
+    SHA256_Final(hash, &sha256);
+    stringstream ss;
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    {
+        ss << hex << setw(2) << setfill('0') << (int)hash[i];
+    }
+    return ss.str();
+}
+
+/** Compute the 256-bit hash of a void pointer */
+inline void Hash(void* in, unsigned int len, unsigned char* out)
+{
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, in, len);
+    SHA256_Final(out, &sha256);
+}
 
 /** Compute the 256-bit hash of an object. */
 template<typename T1>
@@ -161,5 +191,7 @@ uint256 SerializeHash(const T& obj, int nType=SER_GETHASH, int nVersion=PROTOCOL
 unsigned int MurmurHash3(unsigned int nHashSeed, const std::vector<unsigned char>& vDataToHash);
 
 void BIP32Hash(const unsigned char chainCode[32], unsigned int nChild, unsigned char header, const unsigned char data[32], unsigned char output[64]);
+
+void scrypt_hash(const char* pass, unsigned int pLen, const char* salt, unsigned int sLen, char *output, unsigned int N, unsigned int r, unsigned int p, unsigned int dkLen);
 
 #endif // BITCOIN_HASH_H

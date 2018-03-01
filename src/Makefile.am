@@ -76,6 +76,7 @@ BITCOIN_CORE_H = \
   allocators.h \
   amount.h \
   base58.h \
+  bip38.h \
   bloom.h \
   chain.h \
   chainparams.h \
@@ -208,6 +209,7 @@ libbitcoin_server_a_SOURCES = \
 libbitcoin_wallet_a_CPPFLAGS = $(BITCOIN_INCLUDES)
 libbitcoin_wallet_a_SOURCES = \
   activemasternode.cpp \
+  bip38.cpp \
   darksend.cpp \
   darksend-relay.cpp \
   db.cpp \
@@ -264,6 +266,7 @@ libbitcoin_common_a_SOURCES = \
   allocators.cpp \
   amount.cpp \
   base58.cpp \
+  bip38.cpp \
   chainparams.cpp \
   coins.cpp \
   compressor.cpp \

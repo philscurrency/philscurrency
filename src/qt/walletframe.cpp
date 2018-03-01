@@ -147,6 +147,13 @@ void WalletFrame::gotoVerifyMessageTab(QString addr)
         walletView->gotoVerifyMessageTab(addr);
 }
 
+void WalletFrame::gotoBip38Tool()
+{
+    WalletView *walletView = currentWalletView();
+    if (walletView)
+        walletView->gotoBip38Tool();
+}
+
 void WalletFrame::gotoMultiSendDialog()
 {
     WalletView *walletView = currentWalletView();
