@@ -470,8 +470,6 @@ void BitcoinGUI::createMenuBar()
     }
     settings->addAction(optionsAction);
 
-    QMenu *trading = appMenuBar->addMenu(tr("&Explorer"));
-    trading->addAction(openBlockExplorerAction);
 
     if(walletFrame)
     {
@@ -484,6 +482,7 @@ void BitcoinGUI::createMenuBar()
         tools->addSeparator();
         tools->addAction(openConfEditorAction);
         tools->addAction(showBackupsAction);
+        tools->addAction(openBlockExplorerAction);
     }
 
     QMenu *help = appMenuBar->addMenu(tr("&Help"));
@@ -646,7 +645,6 @@ void BitcoinGUI::createTrayIconMenu()
     trayIconMenu->addAction(bip38ToolAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(optionsAction);
-    trayIconMenu->addAction(openBlockExplorerAction);
     trayIconMenu->addAction(openInfoAction);
     trayIconMenu->addAction(openRPCConsoleAction);
     trayIconMenu->addAction(openNetworkAction);
@@ -655,6 +653,7 @@ void BitcoinGUI::createTrayIconMenu()
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(openConfEditorAction);
     trayIconMenu->addAction(showBackupsAction);
+    trayIconMenu->addAction(openBlockExplorerAction);
 #ifndef Q_OS_MAC // This is built-in on Mac
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(quitAction);

@@ -1580,7 +1580,10 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex)
     if (!ReadBlockFromDisk(block, pindex->GetBlockPos()))
         return false;
     if (block.GetHash() != pindex->GetBlockHash())
+    {
+        LogPrintf("%s : block=%s index=%s\n", __func__, block.GetHash().ToString().c_str(), pindex->GetBlockHash().ToString().c_str());
         return error("ReadBlockFromDisk(CBlock&, CBlockIndex*) : GetHash() doesn't match index");
+    }
     return true;
 }
 
@@ -2053,6 +2056,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 
     // verify that the view's current state corresponds to the previous block
     uint256 hashPrevBlock = pindex->pprev == NULL ? uint256(0) : pindex->pprev->GetBlockHash();
+    if(hashPrevBlock != view.GetBestBlock())
+        LogPrintf("%s: hashPrev=%s view=%s\n", __func__, hashPrevBlock.ToString().c_str(), view.GetBestBlock().ToString().c_str());
     assert(hashPrevBlock == view.GetBestBlock());
 
     // Special case for the genesis block, skipping connection of its transactions
@@ -2790,7 +2795,7 @@ bool ReconsiderBlock(CValidationState& state, CBlockIndex *pindex) {
     return true;
 }
 
-CBlockIndex* AddToBlockIndex(const CBlockHeader& block)
+CBlockIndex* AddToBlockIndex(const CBlock& block)
 {
     // Check for duplicate
     uint256 hash = block.GetHash();
@@ -3009,6 +3014,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
                              REJECT_INVALID, "bad-header", true);
 
     // Check timestamp
+    LogPrint("debug","%s: block=%s  is proof of stake=%d\n", __func__, block.GetHash().ToString().c_str(), block.IsProofOfStake());
     if (block.GetBlockTime() > GetAdjustedTime() + (block.IsProofOfStake() ? 180 : 7200)) // 3 minute future drift for PoS
         return state.Invalid(error("CheckBlock() : block timestamp too far in the future"),
                              REJECT_INVALID, "time-too-new");
@@ -3141,7 +3147,7 @@ bool CheckWork(const CBlock block, CBlockIndex * const pindexPrev)
     else if (block.IsProofOfWork())
     {
         // Check proof of work (Here for the architecture issues with DGW v1 and v2)
-        if(pindexPrev->nHeight + 1 <= 68589)
+        if(pindexPrev == NULL || pindexPrev->nHeight + 1 <= 68589)
         {
             unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, false);
             double n1 = ConvertBitsToDouble(block.nBits);
@@ -3252,7 +3258,7 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
     return true;
 }
 
-bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state, CBlockIndex** ppindex)
+bool AcceptBlockHeader(const CBlock& block, CValidationState& state, CBlockIndex** ppindex)
 {
     AssertLockHeld(cs_main);
     // Check for duplicate
@@ -3429,19 +3435,22 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDis
     // ppcoin: check proof-of-stake
     // Limited duplicity on stake: prevents block flood attack
     // Duplicate stake allowed only when there is orphan child block
-    if (pblock->IsProofOfStake() && setStakeSeen.count(pblock->GetProofOfStake())/* && !mapOrphanBlocksByPrev.count(hash)*/)
-        return error("ProcessNewBlock() : duplicate proof-of-stake (%s, %d) for block %s", pblock->GetProofOfStake().first.ToString().c_str(), pblock->GetProofOfStake().second, pblock->GetHash().ToString().c_str());
+    //if (pblock->IsProofOfStake() && setStakeSeen.count(pblock->GetProofOfStake())/* && !mapOrphanBlocksByPrev.count(hash)*/)
+    //    return error("ProcessNewBlock() : duplicate proof-of-stake (%s, %d) for block %s", pblock->GetProofOfStake().first.ToString().c_str(), pblock->GetProofOfStake().second, pblock->GetHash().ToString().c_str());
 
     // NovaCoin: check proof-of-stake block signature
     if (!pblock->CheckBlockSignature())
         return error("ProcessNewBlock() : bad proof-of-stake block signature");
 
-    //if we get this far, check if the prev block is our prev block, if not then request sync and return false
-    BlockMap::iterator mi = mapBlockIndex.find(pblock->hashPrevBlock);
-    if (mi == mapBlockIndex.end())
+    if (pblock->GetHash() != Params().HashGenesisBlock() && pfrom != NULL)
     {
-        pfrom->PushMessage("getblocks", chainActive.GetLocator(), uint256(0));
-        return false;
+        //if we get this far, check if the prev block is our prev block, if not then request sync and return false
+        BlockMap::iterator mi = mapBlockIndex.find(pblock->hashPrevBlock);
+        if (mi == mapBlockIndex.end())
+        {
+            pfrom->PushMessage("getblocks", chainActive.GetLocator(), uint256(0));
+            return false;
+        }
     }
 
     while(true) {
@@ -3476,14 +3485,16 @@ bool ProcessNewBlock(CValidationState &state, CNode* pfrom, CBlock* pblock, CDis
         }
     }
 
-    // If turned on MultiSend will send a transaction (or more) on the after maturity of a stake
-     if (pwalletMain->isMultiSendEnabled())
-        pwalletMain->MultiSend();
+    if(pwalletMain)
+    {
+        // If turned on MultiSend will send a transaction (or more) on the after maturity of a stake
+        if (pwalletMain->isMultiSendEnabled())
+            pwalletMain->MultiSend();
 
-     //If turned on Auto Combine will scan wallet for dust to combine
-     if(pwalletMain->fCombineDust)
-         pwalletMain->AutoCombineDust();
-
+        //If turned on Auto Combine will scan wallet for dust to combine
+        if (pwalletMain->fCombineDust)
+            pwalletMain->AutoCombineDust();
+    }
 
     LogPrintf("%s : ACCEPTED\n", __func__);
 
@@ -3674,6 +3685,86 @@ bool static LoadBlockIndexDB()
         }
     }
 
+    //Check if the shutdown procedure was followed on last client exit
+    bool fLastShutdownWasPrepared = true;
+    pblocktree->ReadFlag("shutdown", fLastShutdownWasPrepared);
+    LogPrintf("%s: Last shutdown was prepared: %s\n", __func__, fLastShutdownWasPrepared);
+		
+    //Check for inconsistency with block file info and internal state
+    if(!fLastShutdownWasPrepared
+       && !GetBoolArg("-forcestart", false)
+       && !GetBoolArg("-reindex", false)
+       && (vSortedByHeight.size() != vinfoBlockFile[nLastBlockFile].nHeightLast + 1)
+       && (vinfoBlockFile[nLastBlockFile].nHeightLast != 0))
+    {
+        //The database is in a state where a block has been accepted and written to disk, but not
+        //all of the block has perculated through the code. The block and the index should both be
+        //intact (although assertions are added if they are not), and the block will be reprocessed
+        //to ensure all data will be accounted for.
+        LogPrintf("%s: Inconsistent State Detected mapBlockIndex.size()=%d blockFileBlocks=%d\n", __func__, vSortedByHeight.size(), vinfoBlockFile[nLastBlockFile].nHeightLast + 1);
+        LogPrintf("%s: lastIndexPos=%d blockFileSize=%d\n", __func__, vSortedByHeight[vSortedByHeight.size() - 1].second->GetBlockPos().nPos,
+                  vinfoBlockFile[nLastBlockFile].nSize);
+
+        //try reading the block from the last index we have
+        LogPrintf("%s: Attempting to re-add last block that was recorded to disk\n", __func__);
+        bool isFixed = true;
+        string strError = "";
+        CBlockIndex * pindexBestKnown = vSortedByHeight[vSortedByHeight.size() - 1].second;
+        CBlock checkBlock;
+        if(!ReadBlockFromDisk(checkBlock, pindexBestKnown))
+        {
+            isFixed = false;
+            strError = strprintf("failed to read block %d from disk", pindexBestKnown->nHeight);
+        }
+
+        LogPrintf("%s: bestBlock=%s prev=%s\n", __func__, pindexBestKnown->GetBlockHash().ToString().c_str(),
+                  pindexBestKnown->pprev->GetBlockHash().ToString().c_str());
+
+        //set the chain to the previous block that has been completely accepted
+        chainActive.SetTip(pindexBestKnown->pprev);
+
+        //Process the bestBlock again, using the known location on disk
+        CDiskBlockPos blockPos = pindexBestKnown->GetBlockPos();
+        CValidationState state;
+        ProcessNewBlock(state, NULL, &checkBlock, &blockPos);
+
+        //ensure that everything is as it should be
+        if(pcoinsTip->GetBestBlock() != checkBlock.GetHash())
+        {
+            isFixed = false;
+            strError = "pcoinsTip best block is not correct";
+        }
+
+        //force the block file to update or else the bestBlock will be overwritten by the next block
+        vinfoBlockFile[nLastBlockFile].AddBlock(pindexBestKnown->nHeight, pindexBestKnown->nTime);
+        vinfoBlockFile[nLastBlockFile].nSize += checkBlock.GetSerializeSize(SER_DISK, CLIENT_VERSION);
+        setDirtyFileInfo.insert(nLastBlockFile);
+        FlushStateToDisk();
+
+        //Print out file info again
+        pblocktree->ReadLastBlockFile(nLastBlockFile);
+        vinfoBlockFile.resize(nLastBlockFile + 1);
+        LogPrintf("%s: last block file = %i\n", __func__, nLastBlockFile);
+        for (int nFile = 0; nFile <= nLastBlockFile; nFile++) {
+            pblocktree->ReadBlockFileInfo(nFile, vinfoBlockFile[nFile]);
+        }
+        LogPrintf("%s: last block file info: %s\n", __func__, vinfoBlockFile[nLastBlockFile].ToString());
+
+        if(mapBlockIndex.size() != vinfoBlockFile[nLastBlockFile].nHeightLast + 1)
+        {
+            isFixed = false;
+            strError = "mapBlockIndex does not equal the meta data's last height";
+        }
+
+        if(!isFixed)
+        {
+            strError = "Failed reading from database. " + strError + ". The block database is in an inconsistent state and may cause issues in the future."
+                    "To force start use -forcestart";
+            uiInterface.ThreadSafeMessageBox(strError, "", CClientUIInterface::MSG_ERROR);
+            abort();
+        }
+    }
+
     // Check whether we need to continue reindexing
     bool fReindexing = false;
     pblocktree->ReadReindexing(fReindexing);
@@ -3682,6 +3773,9 @@ bool static LoadBlockIndexDB()
     // Check whether we have a transaction index
     pblocktree->ReadFlag("txindex", fTxIndex);
     LogPrintf("LoadBlockIndexDB(): transaction index %s\n", fTxIndex ? "enabled" : "disabled");
+
+    // If this is written true before the next client init, then we know the shutdown process failed
+    pblocktree->WriteFlag("shutdown", false);
 
     // Load pointer to end of best chain
     BlockMap::iterator it = mapBlockIndex.find(pcoinsTip->GetBestBlock());
@@ -4794,7 +4888,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
     }
 
 
-    else if (strCommand == "tempdisable")
+    else if (strCommand == "headers" && Params().HeadersFirstSyncingActive())
     {
         CBlockLocator locator;
         uint256 hashStop;
@@ -4802,8 +4896,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         LOCK(cs_main);
 
- //       if (IsInitialBlockDownload())
-   //         return true;
+        if (IsInitialBlockDownload())
+            return true;
 
         CBlockIndex* pindex = NULL;
         if (locator.IsNull())
@@ -4999,7 +5093,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
     }
 
 
-    else if (strCommand == "tempdisable" && !fImporting && !fReindex) // Ignore headers received while importing
+    else if (strCommand == "headers" && Params().HeadersFirstSyncingActive() && !fImporting && !fReindex) // Ignore headers received while importing
     {
         std::vector<CBlockHeader> headers;
 
@@ -5022,14 +5116,17 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             return true;
         }
         CBlockIndex *pindexLast = NULL;
-        BOOST_FOREACH(const CBlockHeader& header, headers) {
+        BOOST_FOREACH(const CBlockHeader& header, headers){
             CValidationState state;
             if (pindexLast != NULL && header.hashPrevBlock != pindexLast->GetBlockHash()) {
                 Misbehaving(pfrom->GetId(), 20);
                 return error("non-continuous headers sequence");
             }
 
-            if (!AcceptBlockHeader(header, state, &pindexLast)) {
+            /*TODO: this has a CBlock cast on it so that it will compile. There should be a solution for this
+             * before headers are reimplemented on mainnet
+             */
+            if (!AcceptBlockHeader((CBlock)header, state, &pindexLast)) {
                 int nDoS;
                 if (state.IsInvalid(nDoS)) {
                     if (nDoS > 0)

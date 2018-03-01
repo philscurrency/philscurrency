@@ -37,6 +37,7 @@
 #include "keepass.h"
 #endif
 
+#include <fstream>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -189,6 +190,9 @@ void PrepareShutdown()
         LOCK(cs_main);
         if (pcoinsTip != NULL) {
             FlushStateToDisk();
+
+            //record that client took the proper shutdown procedure
+            pblocktree->WriteFlag("shutdown", true);
         }
         delete pcoinsTip;
         pcoinsTip = NULL;
@@ -1216,7 +1220,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
                 uiInterface.InitMessage(_("Verifying blocks..."));
                 if (!CVerifyDB().VerifyDB(pcoinsdbview, GetArg("-checklevel", 3),
-                              GetArg("-checkblocks", 288))) {
+                              GetArg("-checkblocks", 500))) {
                     strLoadError = _("Corrupted block database detected");
                     break;
                 }
