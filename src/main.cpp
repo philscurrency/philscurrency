@@ -1606,7 +1606,7 @@ double ConvertBitsToDouble(unsigned int nBits)
     return dDiff;
 }
 
-int64_t GetBlockValue(int nHeight)
+int64_t GetBlockValue(int nBits, int nHeight, const CAmount& nFees)
 {
     int64_t nSubsidy = 120 * COIN;
 
@@ -1624,13 +1624,13 @@ int64_t GetBlockValue(int nHeight)
     int halvings = nHeight / Params().SubsidyHalvingInterval();
 
     // Force block reward to zero when right shift is undefined.
-    //if (halvings >= 64)
-       // return nFees;
+    if (halvings >= 64)
+        return nFees;
 
     // Subsidy is cut in half every 400,000 blocks
     nSubsidy >>= halvings;
 
-    return nSubsidy;
+    return nSubsidy + nFees;
 }
 
 int64_t GetMasternodePayment(int nHeight, int64_t blockValue)
@@ -2176,10 +2176,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
 
-    if(!IsInitialBlockDownload() && !IsBlockValueValid(block, GetBlockValue(pindex->pprev->nHeight))){
+    if(!IsBlockValueValid(block, GetBlockValue(pindex->pprev->nBits, pindex->pprev->nHeight, nFees))){
         return state.DoS(100,
                          error("ConnectBlock() : reward pays too much (actual=%d vs limit=%d)",
-                               block.vtx[0].GetValueOut(), GetBlockValue(pindex->pprev->nHeight)),
+                               block.vtx[0].GetValueOut(), GetBlockValue(pindex->pprev->nBits, pindex->pprev->nHeight, nFees)),
                                REJECT_INVALID, "bad-cb-amount");
     }
 
@@ -5243,14 +5243,6 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         }
     }
 
-    else if (!(nLocalServices & NODE_BLOOM) &&
-              (strCommand == "filterload" ||
-               strCommand == "filteradd" ||
-               strCommand == "filterclear"))
-    {
-        LogPrintf("bloom message=%s\n", strCommand);
-        Misbehaving(pfrom->GetId(), 100);
-    }
 
     else if (strCommand == "filterload")
     {

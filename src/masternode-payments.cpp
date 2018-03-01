@@ -310,7 +310,7 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
         }
     }
 
-    CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
+    CAmount blockValue = GetBlockValue(pindexPrev->nBits, pindexPrev->nHeight, nFees);
     CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight, blockValue);
 
     
@@ -519,7 +519,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
     int nMaxSignatures = 0;
     std::string strPayeesPossible = "";
 
-    CAmount nReward = GetBlockValue(nBlockHeight);
+    CAmount nReward = GetBlockValue(0, nBlockHeight, 0);
     CAmount requiredMasternodePayment = GetMasternodePayment(nBlockHeight, nReward);
 
     //require at least 6 signatures

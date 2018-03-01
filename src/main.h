@@ -221,7 +221,7 @@ int64_t GetMasternodePayment(int nHeight, int64_t blockValue);
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, bool fProofOfStake);
 
 bool ActivateBestChain(CValidationState &state, CBlock *pblock = NULL);
-CAmount GetBlockValue(int nHeight);
+CAmount GetBlockValue(int nBits, int nHeight, const CAmount& nFees);
 
 /** Create a new block index entry for a given block hash */
 CBlockIndex * InsertBlockIndex(uint256 hash);
