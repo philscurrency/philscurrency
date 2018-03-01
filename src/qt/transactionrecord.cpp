@@ -58,7 +58,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
                 {
                     if(IsMine(*wallet, outAddress))
                     {
-                        TransactionRecord txrMasternodeRec = TransactionRecord(hash, nTime, TransactionRecord::RecvWithAddress, CBitcoinAddress(outAddress).ToString(), wtx.vout[i].nValue, 0);
+                        TransactionRecord txrMasternodeRec = TransactionRecord(hash, nTime, TransactionRecord::MNReward, CBitcoinAddress(outAddress).ToString(), wtx.vout[i].nValue, 0);
                         parts.append(txrMasternodeRec);
                     }
                 }
@@ -290,7 +290,7 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
         }
     }
     // For generated transactions, determine maturity
-    else if(type == TransactionRecord::Generated || type == TransactionRecord::StakeMint)
+    else if(type == TransactionRecord::Generated || type == TransactionRecord::StakeMint || type == TransactionRecord::MNReward)
     {
         if (wtx.GetBlocksToMaturity() > 0)
         {

@@ -1659,8 +1659,8 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Địa chỉ/Máy trạm</translation>
     </message>
     <message>
-        <source>User Agent</source>
-        <translation>User Agent</translation>
+        <source>Version</source>
+        <translation>Version</translation>
     </message>
     <message>
         <source>Ping Time</source>
@@ -1860,8 +1860,8 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Phiên bản</translation>
     </message>
     <message>
-        <source>User Agent</source>
-        <translation>User Agent</translation>
+        <source>Version</source>
+        <translation>Version</translation>
     </message>
     <message>
         <source>Services</source>

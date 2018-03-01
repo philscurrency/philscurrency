@@ -11,6 +11,7 @@
 #include "sync.h"
 #include "spork.h"
 #include "addrman.h"
+#include "utilmoneystr.h"
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
@@ -106,7 +107,6 @@ CMasternodePaymentDB::ReadResult CMasternodePaymentDB::Read(CMasternodePayments&
         error("%s : Checksum mismatch, data corrupted", __func__);
         return IncorrectHash;
     }
-
 
     unsigned char pchMsgTmp[4];
     std::string strMagicMessageTmp;
@@ -232,7 +232,7 @@ bool IsBlockPayeeValid(const CBlock& block, int nBlockHeight)
         return true;
     }
 
-    const CTransaction& txNew = (nBlockHeight > LAST_POW_BLOCK ? block.vtx[1] : block.vtx[0]);
+    const CTransaction& txNew = (nBlockHeight > Params().LAST_POW_BLOCK() ? block.vtx[1] : block.vtx[0]);
 
     //check if it's a budget block
     if(IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS)){
@@ -310,7 +310,7 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
         }
     }
 
-    CAmount blockValue = GetBlockValue(pindexPrev->nBits, pindexPrev->nHeight, nFees);
+    CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
     CAmount masternodePayment = GetMasternodePayment(pindexPrev->nHeight, blockValue);
 
     
@@ -337,7 +337,7 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFe
         ExtractDestination(payee, address1);
         CBitcoinAddress address2(address1);
 
-        LogPrintf("Masternode payment to %s\n", address2.ToString().c_str());
+        LogPrintf("Masternode payment of %s to %s\n", FormatMoney(masternodePayment).c_str(), address2.ToString().c_str());
     }
 }
 
@@ -519,10 +519,10 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
     int nMaxSignatures = 0;
     std::string strPayeesPossible = "";
 
-    CAmount masternodePayment = GetMasternodePayment(nBlockHeight, txNew.GetValueOut());
+    CAmount nReward = GetBlockValue(nBlockHeight);
+    CAmount requiredMasternodePayment = GetMasternodePayment(nBlockHeight, nReward);
 
     //require at least 6 signatures
-
     BOOST_FOREACH(CMasternodePayee& payee, vecPayments)
         if(payee.nVotes >= nMaxSignatures && payee.nVotes >= MNPAYMENTS_SIGNATURES_REQUIRED)
             nMaxSignatures = payee.nVotes;
@@ -533,8 +533,9 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
     BOOST_FOREACH(CMasternodePayee& payee, vecPayments)
     {
         bool found = false;
-        BOOST_FOREACH(CTxOut out, txNew.vout){
-            if(payee.scriptPubKey == out.scriptPubKey && masternodePayment == out.nValue){
+        BOOST_FOREACH(CTxOut out, txNew.vout)
+        {
+            if(payee.scriptPubKey == out.scriptPubKey && out.nValue >= requiredMasternodePayment){
                 found = true;
             }
         }
@@ -555,7 +556,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
     }
 
 
-    LogPrintf("CMasternodePayments::IsTransactionValid - Missing required payment - %s\n", strPayeesPossible.c_str());
+    LogPrintf("CMasternodePayments::IsTransactionValid - Missing required payment of %s to %s\n", FormatMoney(requiredMasternodePayment).c_str(),strPayeesPossible.c_str());
     return false;
 }
 

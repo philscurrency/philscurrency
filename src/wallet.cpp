@@ -1504,7 +1504,7 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
             if (fOnlyConfirmed && !pcoin->IsTrusted())
                 continue;
 
-            if (pcoin->IsCoinBase() && pcoin->GetBlocksToMaturity() > 0)
+            if ((pcoin->IsCoinBase() || pcoin->IsCoinStake()) && pcoin->GetBlocksToMaturity() > 0)
                 continue;
 
             int nDepth = pcoin->GetDepthInMainChain(false);
@@ -1618,7 +1618,7 @@ bool CWallet::SelectStakeCoins(std::set<std::pair<const CWalletTx*,unsigned int>
             continue;
 
         //check that it is matured
-        if(out.nDepth < (out.tx->IsCoinStake() ? COINBASE_MATURITY : 10))
+        if(out.nDepth < (out.tx->IsCoinStake() ? Params().COINBASE_MATURITY() : 10))
             continue;
 
         //add to our stake set
@@ -2169,16 +2169,40 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, CAmount> >& vecSend,
 
                 CAmount nTotalValue = nValue + nFeeRet;
                 double dPriority = 0;
+
                 // vouts to the payees
-                BOOST_FOREACH (const PAIRTYPE(CScript, CAmount)& s, vecSend)
+                if(coinControl && !coinControl->fSplitBlock)
                 {
-                    CTxOut txout(s.second, s.first);
-                    if (txout.IsDust(::minRelayTxFee))
+                    BOOST_FOREACH (const PAIRTYPE(CScript, CAmount)& s, vecSend)
                     {
-                        strFailReason = _("Transaction amount too small");
-                        return false;
+                        CTxOut txout(s.second, s.first);
+                        if (txout.IsDust(::minRelayTxFee))
+                        {
+                            strFailReason = _("Transaction amount too small");
+                            return false;
+                        }
+                        txNew.vout.push_back(txout);
                     }
-                    txNew.vout.push_back(txout);
+                }
+                else //UTXO Splitter Transaction
+                {
+                    int nSplitBlock = coinControl->nSplitBlock;
+                    if(nSplitBlock < 1)
+                        nSplitBlock = 1;
+
+                    BOOST_FOREACH (const PAIRTYPE(CScript, CAmount)& s, vecSend)
+                    {
+                        for(int i = 0; i < nSplitBlock; i++)
+                        {
+                            if(i == nSplitBlock - 1)
+                            {
+                                uint64_t nRemainder = s.second % nSplitBlock;
+                                txNew.vout.push_back(CTxOut((s.second / nSplitBlock) + nRemainder, s.first));
+                            }
+                            else
+                                txNew.vout.push_back(CTxOut(s.second / nSplitBlock, s.first));
+                        }
+                    }
                 }
 
                 // Choose coins to use
@@ -2472,7 +2496,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             
             //presstab HyperStake - calculate the total size of our new output including the stake reward so that we can use it to decide whether to split the stake outputs
             const CBlockIndex* pIndex0 = chainActive.Tip();
-            uint64_t nTotalSize = pcoin.first->vout[pcoin.second].nValue + GetBlockValue(nBits, pIndex0->nHeight, 0);
+            uint64_t nTotalSize = pcoin.first->vout[pcoin.second].nValue + GetBlockValue(pIndex0->nHeight);
                 
             //presstab HyperStake - if MultiSend is set to send in coinstake we will add our outputs here (values asigned further down)
             if (nTotalSize / 2 > nStakeSplitThreshold * COIN)
@@ -2492,7 +2516,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     // Calculate reward
     uint64_t nReward;
     const CBlockIndex* pIndex0 = chainActive.Tip();    
-    nReward = GetBlockValue(nBits, pIndex0->nHeight, 0);
+    nReward = GetBlockValue(pIndex0->nHeight);
     nCredit += nReward;
 
     int64_t nMinFee = 0;
@@ -3485,7 +3509,7 @@ int CMerkleTx::GetBlocksToMaturity() const
 {
     if (!(IsCoinBase() || IsCoinStake()))
         return 0;
-    return max(0, (COINBASE_MATURITY+1) - GetDepthInMainChain());
+    return max(0, (Params().COINBASE_MATURITY()+1) - GetDepthInMainChain());
 }
 
 

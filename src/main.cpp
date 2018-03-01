@@ -1606,7 +1606,7 @@ double ConvertBitsToDouble(unsigned int nBits)
     return dDiff;
 }
 
-int64_t GetBlockValue(int nBits, int nHeight, const CAmount& nFees)
+int64_t GetBlockValue(int nHeight)
 {
     int64_t nSubsidy = 120 * COIN;
 
@@ -1624,13 +1624,13 @@ int64_t GetBlockValue(int nBits, int nHeight, const CAmount& nFees)
     int halvings = nHeight / Params().SubsidyHalvingInterval();
 
     // Force block reward to zero when right shift is undefined.
-    if (halvings >= 64)
-        return nFees;
+    //if (halvings >= 64)
+       // return nFees;
 
     // Subsidy is cut in half every 400,000 blocks
     nSubsidy >>= halvings;
 
-    return nSubsidy + nFees;
+    return nSubsidy;
 }
 
 int64_t GetMasternodePayment(int nHeight, int64_t blockValue)
@@ -1841,7 +1841,7 @@ bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsVi
 
             // If prev is coinbase, check that it's matured
             if (coins->IsCoinBase() || coins->IsCoinStake()) {
-                if (nSpendHeight - coins->nHeight < COINBASE_MATURITY)
+                if (nSpendHeight - coins->nHeight < Params().COINBASE_MATURITY())
                     return state.Invalid(
                         error("CheckInputs() : tried to spend coinbase at depth %d, coinstake=%d", nSpendHeight - coins->nHeight, coins->IsCoinStake()),
                         REJECT_INVALID, "bad-txns-premature-spend-of-coinbase");
@@ -2062,11 +2062,11 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         return true;
     }
 
-    if(pindex->nHeight <= LAST_POW_BLOCK && block.IsProofOfStake())
+    if(pindex->nHeight <= Params().LAST_POW_BLOCK() && block.IsProofOfStake())
         return state.DoS(100, error("ConnectBlock() : PoS period not active"),
                                  REJECT_INVALID, "PoS-early");
 
-    if(pindex->nHeight > LAST_POW_BLOCK && block.IsProofOfWork())
+    if(pindex->nHeight > Params().LAST_POW_BLOCK() && block.IsProofOfWork())
         return state.DoS(100, error("ConnectBlock() : PoW period ended"),
                                  REJECT_INVALID, "PoW-ended");
 
@@ -2176,10 +2176,10 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int64_t nTime1 = GetTimeMicros(); nTimeConnect += nTime1 - nTimeStart;
     LogPrint("bench", "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs]\n", (unsigned)block.vtx.size(), 0.001 * (nTime1 - nTimeStart), 0.001 * (nTime1 - nTimeStart) / block.vtx.size(), nInputs <= 1 ? 0 : 0.001 * (nTime1 - nTimeStart) / (nInputs-1), nTimeConnect * 0.000001);
 
-    if(!IsBlockValueValid(block, GetBlockValue(pindex->pprev->nBits, pindex->pprev->nHeight, nFees))){
+    if(!IsInitialBlockDownload() && !IsBlockValueValid(block, GetBlockValue(pindex->pprev->nHeight))){
         return state.DoS(100,
                          error("ConnectBlock() : reward pays too much (actual=%d vs limit=%d)",
-                               block.vtx[0].GetValueOut(), GetBlockValue(pindex->pprev->nBits, pindex->pprev->nHeight, nFees)),
+                               block.vtx[0].GetValueOut(), GetBlockValue(pindex->pprev->nHeight)),
                                REJECT_INVALID, "bad-cb-amount");
     }
 
@@ -4486,7 +4486,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         uint64_t nNonce = 1;
         vRecv >> pfrom->nVersion >> pfrom->nServices >> nTime >> addrMe;
         if (pfrom->nVersion < MIN_PEER_PROTO_VERSION || 
-        	(chainActive.Tip()->nHeight >= LAST_POW_BLOCK && pfrom->nVersion < MIN_PEER_PROTO_VERSION_POS))
+        	(chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK() && pfrom->nVersion < MIN_PEER_PROTO_VERSION_POS))
         {
             // disconnect from peers older than this proto version
             LogPrintf("peer=%d using obsolete version %i; disconnecting\n", pfrom->id, pfrom->nVersion);
@@ -5237,6 +5237,14 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         }
     }
 
+    else if (!(nLocalServices & NODE_BLOOM) &&
+              (strCommand == "filterload" ||
+               strCommand == "filteradd" ||
+               strCommand == "filterclear"))
+    {
+        LogPrintf("bloom message=%s\n", strCommand);
+        Misbehaving(pfrom->GetId(), 100);
+    }
 
     else if (strCommand == "filterload")
     {

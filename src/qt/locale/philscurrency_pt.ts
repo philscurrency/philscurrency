@@ -1655,7 +1655,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Endereço/Servidor</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agente de Usuário</translation>
     </message>
     <message>
@@ -1856,7 +1856,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Versão</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agente de Usuário</translation>
     </message>
     <message>

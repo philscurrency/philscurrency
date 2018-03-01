@@ -42,7 +42,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return pindexLast->nBits;
     }
 
-    if(chainActive.Tip()->nHeight > LAST_POW_BLOCK)
+    if(chainActive.Tip()->nHeight > Params().LAST_POW_BLOCK())
     {
         const CBlockIndex* pindexPrev = chainActive.Tip();
         uint256 bnTargetLimit = (~uint256(0) >> 24);

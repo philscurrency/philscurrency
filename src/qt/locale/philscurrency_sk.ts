@@ -1658,7 +1658,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Adresa/Názov hostiteľa</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agent používateľa</translation>
     </message>
     <message>
@@ -1859,7 +1859,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Verzia</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agent používateľa</translation>
     </message>
     <message>

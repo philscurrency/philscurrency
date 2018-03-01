@@ -1659,7 +1659,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Adres/Hostname</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agent użytkownika</translation>
     </message>
     <message>
@@ -1860,7 +1860,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Wersja</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agent użytkownika</translation>
     </message>
     <message>

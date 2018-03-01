@@ -1659,7 +1659,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Dirección/Nombre del servidor</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agente del Usuario</translation>
     </message>
     <message>
@@ -1860,7 +1860,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Versión</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agente del Usuario</translation>
     </message>
     <message>

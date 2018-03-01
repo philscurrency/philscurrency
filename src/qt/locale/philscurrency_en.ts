@@ -2107,8 +2107,8 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
     </message>
     <message>
         <location line="+0"/>
-        <source>User Agent</source>
-        <translation>User Agent</translation>
+        <source>Version</source>
+        <translation>Version</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -2381,8 +2381,8 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
     </message>
     <message>
         <location line="+23"/>
-        <source>User Agent</source>
-        <translation>User Agent</translation>
+        <source>Version</source>
+        <translation>Version</translation>
     </message>
     <message>
         <location line="+23"/>

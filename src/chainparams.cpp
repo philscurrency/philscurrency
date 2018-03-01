@@ -115,6 +115,8 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 10 * 60; // 10 minutes
         nTargetSpacing = 1 * 60; // 1 minute
+        nLastPOWBlock = ;
+        nMaturity = 10;
 
         const char* pszTimestamp = "CNN June 28 2017 The next big thing is here";
         CMutableTransaction txNew;
@@ -192,6 +194,8 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 10 * 60; // 10 minutes
         nTargetSpacing = 1 * 60; // 1 minute
+        nLastPOWBlock = 200;
+        nMaturity = 15;
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime = 1503261995;
@@ -201,7 +205,6 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(111);
         base58Prefixes[SCRIPT_ADDRESS] = list_of(196);

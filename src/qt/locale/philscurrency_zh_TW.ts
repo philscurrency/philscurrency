@@ -1639,7 +1639,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>位址/主機名稱</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>使用者代理</translation>
     </message>
     <message>
@@ -1836,7 +1836,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>版本</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>使用者代理</translation>
     </message>
     <message>
