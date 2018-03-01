@@ -23,6 +23,7 @@ class ClientModel;
 class NetworkStyle;
 class Notificator;
 class OptionsModel;
+class BlockExplorer;
 class RPCConsole;
 class SendCoinsRecipient;
 class UnitDisplayStatusBarControl;
@@ -117,6 +118,7 @@ private:
     QAction *openConfEditorAction;
     QAction *showBackupsAction;
     QAction *openAction;
+	QAction *openBlockExplorerAction;
     QAction *showHelpMessageAction;
     QAction *multiSendAction;
 
@@ -124,6 +126,7 @@ private:
     QMenu *trayIconMenu;
     Notificator *notificator;
     RPCConsole *rpcConsole;
+    BlockExplorer  *explorerWindow;
 
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
@@ -192,6 +195,8 @@ private slots:
     void gotoOverviewPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
+    /** Switch to Explorer Page */
+    void gotoBlockExplorerPage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */

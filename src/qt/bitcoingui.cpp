@@ -21,6 +21,7 @@
 #ifdef ENABLE_WALLET
 #include "walletframe.h"
 #include "walletmodel.h"
+#include "blockexplorer.h"
 #endif // ENABLE_WALLET
 
 #ifdef Q_OS_MAC
@@ -100,6 +101,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle, QWidget *parent) :
     trayIconMenu(0),
     notificator(0),
     rpcConsole(0),
+    explorerWindow(0),
     prevBlocks(0),
     spinnerFrame(0)
 {
@@ -144,6 +146,7 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle, QWidget *parent) :
     {
         /** Create wallet frame*/
         walletFrame = new WalletFrame(this);
+        explorerWindow = new BlockExplorer(this);
     } else
 #endif // ENABLE_WALLET
     {
@@ -235,9 +238,14 @@ BitcoinGUI::BitcoinGUI(const NetworkStyle *networkStyle, QWidget *parent) :
 
     // Get restart command-line parameters and handle restart
     connect(rpcConsole, SIGNAL(handleRestart(QStringList)), this, SLOT(handleRestart(QStringList)));
-    
+
     // prevents an open debug window from becoming stuck/unusable on client shutdown
     connect(quitAction, SIGNAL(triggered()), rpcConsole, SLOT(hide()));
+
+    connect(openBlockExplorerAction, SIGNAL(triggered()), explorerWindow, SLOT(show()));
+
+    // prevents an open debug window from becoming stuck/unusable on client shutdown
+    connect(quitAction, SIGNAL(triggered()), explorerWindow, SLOT(hide()));
 
     // Install event filter to be able to catch status tip events (QEvent::StatusTip)
     this->installEventFilter(this);
@@ -392,6 +400,9 @@ void BitcoinGUI::createActions(const NetworkStyle *networkStyle)
     openAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_FileIcon), tr("Open &URI..."), this);
     openAction->setStatusTip(tr("Open a philscurrency: URI or payment request"));
 
+    openBlockExplorerAction = new QAction(QIcon(":/icons/explorer"), tr("&Blockchain explorer"), this);
+    openBlockExplorerAction->setStatusTip(tr("Block explorer window"));
+
     showHelpMessageAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&Command-line options"), this);
     showHelpMessageAction->setMenuRole(QAction::NoRole);
     showHelpMessageAction->setStatusTip(tr("Show the Philscurrency Core help message to get a list with possible Philscurrency command-line options"));
@@ -458,6 +469,9 @@ void BitcoinGUI::createMenuBar()
         settings->addSeparator();
     }
     settings->addAction(optionsAction);
+
+    QMenu *trading = appMenuBar->addMenu(tr("&Explorer"));
+    trading->addAction(openBlockExplorerAction);
 
     if(walletFrame)
     {
@@ -632,6 +646,7 @@ void BitcoinGUI::createTrayIconMenu()
     trayIconMenu->addAction(bip38ToolAction);
     trayIconMenu->addSeparator();
     trayIconMenu->addAction(optionsAction);
+    trayIconMenu->addAction(openBlockExplorerAction);
     trayIconMenu->addAction(openInfoAction);
     trayIconMenu->addAction(openRPCConsoleAction);
     trayIconMenu->addAction(openNetworkAction);
@@ -737,6 +752,10 @@ void BitcoinGUI::gotoMultiSendDialog()
     multiSendAction->setChecked(true);
     if(walletFrame)
         walletFrame->gotoMultiSendDialog();
+}
+void BitcoinGUI::gotoBlockExplorerPage()
+{
+    if (walletFrame) walletFrame->gotoBlockExplorerPage();
 }
 
 #endif // ENABLE_WALLET

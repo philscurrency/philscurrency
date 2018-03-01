@@ -19,6 +19,7 @@
 #include "transactiontablemodel.h"
 #include "transactionview.h"
 #include "walletmodel.h"
+#include "blockexplorer.h"
 
 #include "ui_interface.h"
 
@@ -39,7 +40,7 @@ WalletView::WalletView(QWidget *parent):
 {
     // Create tabs
     overviewPage = new OverviewPage();
-
+	explorerWindow = new BlockExplorer(this);
     transactionsPage = new QWidget(this);
     QVBoxLayout *vbox = new QVBoxLayout();
     QHBoxLayout *hbox_buttons = new QHBoxLayout();
@@ -75,6 +76,7 @@ WalletView::WalletView(QWidget *parent):
     addWidget(transactionsPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
+	addWidget(explorerWindow);
 
     // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), transactionView, SLOT(focusTransaction(QModelIndex)));
@@ -90,6 +92,7 @@ WalletView::WalletView(QWidget *parent):
 
     // Pass through messages from sendCoinsPage
     connect(sendCoinsPage, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
+
     // Pass through messages from transactionView
     connect(transactionView, SIGNAL(message(QString,QString,unsigned int)), this, SIGNAL(message(QString,QString,unsigned int)));
 }
@@ -181,6 +184,11 @@ void WalletView::gotoOverviewPage()
 void WalletView::gotoHistoryPage()
 {
     setCurrentWidget(transactionsPage);
+}
+
+void WalletView::gotoBlockExplorerPage()
+{
+    setCurrentWidget(explorerWindow);
 }
 
 void WalletView::gotoReceiveCoinsPage()

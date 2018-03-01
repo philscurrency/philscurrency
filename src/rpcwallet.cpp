@@ -2223,7 +2223,7 @@ Value autocombinerewards(const Array & params, bool fHelp)
     if (fHelp || params.size() < 1)
         throw runtime_error(
                 "autocombinerewards <true/false> threshold\n"
-                "Wallet will automatically monitor for any coins with value below the threshold amount, and combine them if they reside with the same PIVX address\n"
+                "Wallet will automatically monitor for any coins with value below the threshold amount, and combine them if they reside with the same PHILS address\n"
                 "When autocombinerewards runs it will create a transaction, and therefore will be subject to transaction fees.\n");
 
     CWalletDB walletdb(pwalletMain->strWalletFile);
