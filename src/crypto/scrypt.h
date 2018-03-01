@@ -2,9 +2,11 @@
 #define SCRYPT_H
 #include <stdlib.h>
 #include <stdint.h>
+#include <string>
 
 static const int SCRYPT_SCRATCHPAD_SIZE = 131072 + 63;
 
+void scrypt(const char* pass, unsigned int pLen, const char* salt, unsigned int sLen, char *output, unsigned int N, unsigned int r, unsigned int p, unsigned int dkLen);
 void scrypt_1024_1_1_256(const char *input, char *output);
 void scrypt_1024_1_1_256_sp_generic(const char *input, char *output, char *scratchpad);
 
