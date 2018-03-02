@@ -67,8 +67,7 @@ public:
     void removeAllWallets();
 #endif // ENABLE_WALLET
     bool enableWallet;
-    bool fMultiSend;
-    bool fMultiSendNotify;
+    bool fMultiSend = false;
 
 protected:
     void changeEvent(QEvent *e);
@@ -116,6 +115,7 @@ private:
     QAction *openPeersAction;
     QAction *openRepairAction;
     QAction *openConfEditorAction;
+    QAction* openMNConfEditorAction;
     QAction *showBackupsAction;
     QAction *openAction;
 	QAction *openBlockExplorerAction;

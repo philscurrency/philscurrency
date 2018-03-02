@@ -3451,7 +3451,7 @@ void CWallet::AutoCombineDust()
         BOOST_FOREACH(const COutput& out, vCoins)
         {
             //no coins should get this far if they dont have proper maturity, this is double checking
-            if(out.tx->IsCoinStake() && out.tx->GetDepthInMainChain() < COINBASE_MATURITY + 1)
+            if (out.tx->IsCoinStake() && out.tx->GetDepthInMainChain() < Params().COINBASE_MATURITY() + 1 )
                 continue;
 
             if(out.Value() > nAutoCombineThreshold * COIN)
@@ -3525,7 +3525,7 @@ bool CWallet::MultiSend()
     BOOST_FOREACH(const COutput& out, vCoins)
     {
         //need output with precise confirm count - this is how we identify which is the output to send
-        if(out.tx->GetDepthInMainChain() != COINBASE_MATURITY + 1)
+        if (out.tx->GetDepthInMainChain() != Params().COINBASE_MATURITY() + 1)
             continue;
 
         COutPoint outpoint(out.tx->GetHash(), out.i);
