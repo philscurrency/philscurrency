@@ -63,8 +63,7 @@
    <property name="text">
     <string>MultiSend allows you to automatically send up to 100% of your stake or masternode reward to a list of other PHILS address after it matures.
 To Add: enter percentage to give and PHILS address to add to the MultiSend vector.
-To Delete: Enter address to delete and press delete.
-MultiSend will not be activated unless you have clicked Activate</string>
+To Delete: Enter address to delete and press delete.</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -253,7 +252,7 @@ MultiSend will not be activated unless you have clicked Activate</string>
     <item>
      <widget class="QCheckBox" name="multiSendMasternodeCheckBox">
       <property name="text">
-       <string>Send For Masternode Rewards</string>
+       <string>Send For MN Rewards</string>
       </property>
      </widget>
     </item>
