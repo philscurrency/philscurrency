@@ -12,7 +12,9 @@
 #include "uint256.h"
 #include "util.h"
 
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, bool fProofOfStake)
+#include <math.h>
+
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock)
 {
     unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit().GetCompact();
 
@@ -42,17 +44,14 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return pindexLast->nBits;
     }
 
-    if(chainActive.Tip()->nHeight > Params().LAST_POW_BLOCK())
-    {
-        const CBlockIndex* pindexPrev = chainActive.Tip();
+    if (pindexLast->nHeight > Params().LAST_POW_BLOCK()) {
         uint256 bnTargetLimit = (~uint256(0) >> 24);
         int64_t nTargetSpacing = 60;
         int64_t nTargetTimespan = 60*40;
 
         int64_t nActualSpacing = 0;
-        if(pindexPrev->nHeight != 0)
-            nActualSpacing = pindexPrev->GetBlockTime() - pindexPrev->pprev->GetBlockTime();
-
+        if (pindexLast->nHeight != 0)
+            nActualSpacing = pindexLast->GetBlockTime() - pindexLast->pprev->GetBlockTime();
 
         if (nActualSpacing < 0)
             nActualSpacing = 1;
@@ -60,7 +59,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         // ppcoin: target change every block
         // ppcoin: retarget with exponential moving toward target spacing
         uint256 bnNew;
-        bnNew.SetCompact(pindexPrev->nBits);
+        bnNew.SetCompact(pindexLast->nBits);
 
         int64_t nInterval = nTargetTimespan / nTargetSpacing;
         bnNew *= ((nInterval - 1) * nTargetSpacing + nActualSpacing + nActualSpacing);

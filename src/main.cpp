@@ -2425,11 +2425,16 @@ bool static ConnectTip(CValidationState &state, CBlockIndex *pindexNew, CBlock *
     }
     int64_t nTime4 = GetTimeMicros(); nTimeFlush += nTime4 - nTime3;
     LogPrint("bench", "  - Flush: %.2fms [%.2fs]\n", (nTime4 - nTime3) * 0.001, nTimeFlush * 0.000001);
-    // Write the chain state to disk, if necessary.
-    if (!FlushStateToDisk(state, FLUSH_STATE_IF_NEEDED))
+
+    // Write the chain state to disk, if necessary. Always write to disk if this is the first of a new file.
+    FlushStateMode flushMode = FLUSH_STATE_IF_NEEDED;
+    if (pindexNew->pprev && (pindexNew->GetBlockPos().nFile != pindexNew->pprev->GetBlockPos().nFile))
+        flushMode = FLUSH_STATE_ALWAYS;
+    if (!FlushStateToDisk(state, flushMode))
         return false;
     int64_t nTime5 = GetTimeMicros(); nTimeChainState += nTime5 - nTime4;
     LogPrint("bench", "  - Writing chainstate: %.2fms [%.2fs]\n", (nTime5 - nTime4) * 0.001, nTimeChainState * 0.000001);
+
     // Remove conflicting transactions from the mempool.
     list<CTransaction> txConflicted;
     mempool.removeForBlock(pblock->vtx, pindexNew->nHeight, txConflicted);
@@ -3137,48 +3142,38 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
     return true;
 }
 
-bool CheckWork(const CBlock block, CBlockIndex * const pindexPrev)
+bool CheckWork(const CBlock block, CBlockIndex* const pindexPrev)
 {
-    if(Params().NetworkID() == CBaseChainParams::TESTNET) 
-    {
-        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, block.IsProofOfStake()))
-            return error("%s : incorrect proof of work at %d", __func__, pindexPrev->nHeight + 1);
-    } 
-    else if (block.IsProofOfWork())
-    {
-        // Check proof of work (Here for the architecture issues with DGW v1 and v2)
-        if(pindexPrev == NULL || pindexPrev->nHeight + 1 <= 68589)
-        {
-            unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, false);
-            double n1 = ConvertBitsToDouble(block.nBits);
-            double n2 = ConvertBitsToDouble(nBitsNext);
+    if (pindexPrev == NULL)
+        return error("%s : null pindexPrev for block %s", __func__, block.GetHash().ToString().c_str());
 
-            if (abs(n1-n2) > n1*0.5)
-                return error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, pindexPrev->nHeight + 1);
-        } 
-        else
-        {
-            if (block.nBits != GetNextWorkRequired(pindexPrev, &block, false))
-                return error("%s : incorrect proof of work at %d", __func__, pindexPrev->nHeight + 1);
-        }
+    unsigned int nBitsRequired = GetNextWorkRequired(pindexPrev, &block);
+
+    if (block.IsProofOfWork() && (pindexPrev->nHeight + 1 <= 68589)) {
+        double n1 = ConvertBitsToDouble(block.nBits);
+        double n2 = ConvertBitsToDouble(nBitsRequired);
+
+        if (abs(n1 - n2) > n1 * 0.5)
+            return error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1 - n2), n1, n2, pindexPrev->nHeight + 1);
+
+        return true;
     }
-    else if(block.IsProofOfStake())
-    {
+
+    if (block.nBits != nBitsRequired)
+        return error("%s : incorrect proof of work at %d", __func__, pindexPrev->nHeight + 1);
+
+    if (block.IsProofOfStake()) {
         uint256 hashProofOfStake;
         uint256 hash = block.GetHash();
 
-        if(!CheckProofOfStake(block, hashProofOfStake))
-        {
+        if(!CheckProofOfStake(block, hashProofOfStake)) {
             LogPrintf("WARNING: ProcessBlock(): check proof-of-stake failed for block %s\n", hash.ToString().c_str());
             return false;
         }
-        if (!mapProofOfStake.count(hash)) // add to mapProofOfStake
+        if(!mapProofOfStake.count(hash)) // add to mapProofOfStake
             mapProofOfStake.insert(make_pair(hash, hashProofOfStake));
     }
-    else
-        return error("CheckWork(): block height %d is neither PoS or PoW \n", pindexPrev->nHeight);
 
-    
     return true;
 }
 
@@ -3706,40 +3701,56 @@ bool static LoadBlockIndexDB()
                   vinfoBlockFile[nLastBlockFile].nSize);
 
         //try reading the block from the last index we have
-        LogPrintf("%s: Attempting to re-add last block that was recorded to disk\n", __func__);
         bool isFixed = true;
         string strError = "";
-        CBlockIndex * pindexBestKnown = vSortedByHeight[vSortedByHeight.size() - 1].second;
-        CBlock checkBlock;
-        if(!ReadBlockFromDisk(checkBlock, pindexBestKnown))
+        LogPrintf("%s: Attempting to re-add last block that was recorded to disk\n", __func__);
+
+        //get the last block that was properly recorded to the block info file
+        CBlockIndex* pindexLastMeta = vSortedByHeight[vinfoBlockFile[nLastBlockFile].nHeightLast + 1].second;
+
+        //fix Assertion `hashPrevBlock == view.GetBestBlock()' failed. By adjusting height to the last recorded by coinsview
+        CBlockIndex* pindexCoinsView = mapBlockIndex[pcoinsTip->GetBestBlock()];
+        for(unsigned int i = vinfoBlockFile[nLastBlockFile].nHeightLast + 1; i < vSortedByHeight.size(); i++)
         {
-            isFixed = false;
-            strError = strprintf("failed to read block %d from disk", pindexBestKnown->nHeight);
+            pindexLastMeta = vSortedByHeight[i].second;
+            if(pindexLastMeta->nHeight > pindexCoinsView->nHeight)
+                break;
         }
 
-        LogPrintf("%s: bestBlock=%s prev=%s\n", __func__, pindexBestKnown->GetBlockHash().ToString().c_str(),
-                  pindexBestKnown->pprev->GetBlockHash().ToString().c_str());
+        LogPrintf("%s: Last block properly recorded: #%d %s\n", __func__, pindexLastMeta->nHeight, pindexLastMeta->GetBlockHash().ToString().c_str());
 
-        //set the chain to the previous block that has been completely accepted
-        chainActive.SetTip(pindexBestKnown->pprev);
+        CBlock lastMetaBlock;
+        if (!ReadBlockFromDisk(lastMetaBlock, pindexLastMeta)) {
+            isFixed = false;
+            strError = strprintf("failed to read block %d from disk", pindexLastMeta->nHeight);
+        }
 
-        //Process the bestBlock again, using the known location on disk
-        CDiskBlockPos blockPos = pindexBestKnown->GetBlockPos();
+        //set the chain to the block before lastMeta so that the meta block will be seen as new
+        chainActive.SetTip(pindexLastMeta->pprev);
+
+        //Process the lastMetaBlock again, using the known location on disk
+        CDiskBlockPos blockPos = pindexLastMeta->GetBlockPos();
         CValidationState state;
-        ProcessNewBlock(state, NULL, &checkBlock, &blockPos);
+        ProcessNewBlock(state, NULL, &lastMetaBlock, &blockPos);
 
         //ensure that everything is as it should be
-        if(pcoinsTip->GetBestBlock() != checkBlock.GetHash())
-        {
+        if (pcoinsTip->GetBestBlock() != vSortedByHeight[vSortedByHeight.size() - 1].second->GetBlockHash()) {
             isFixed = false;
             strError = "pcoinsTip best block is not correct";
         }
 
-        //force the block file to update or else the bestBlock will be overwritten by the next block
-        vinfoBlockFile[nLastBlockFile].AddBlock(pindexBestKnown->nHeight, pindexBestKnown->nTime);
-        vinfoBlockFile[nLastBlockFile].nSize += checkBlock.GetSerializeSize(SER_DISK, CLIENT_VERSION);
+        //properly account for all of the blocks that were not in the meta data. If this is not done the file
+        //positioning will be wrong and blocks will be overwritten and later cause serialization errors
+        CBlockIndex *pindexLast = vSortedByHeight[vSortedByHeight.size() - 1].second;
+        CBlock lastBlock;
+        if (!ReadBlockFromDisk(lastBlock, pindexLast)) {
+            isFixed = false;
+            strError = strprintf("failed to read block %d from disk", pindexLast->nHeight);
+        }
+        vinfoBlockFile[nLastBlockFile].nHeightLast = pindexLast->nHeight;
+        vinfoBlockFile[nLastBlockFile].nSize = pindexLast->GetBlockPos().nPos + ::GetSerializeSize(lastBlock, SER_DISK, CLIENT_VERSION);;
         setDirtyFileInfo.insert(nLastBlockFile);
-        FlushStateToDisk();
+        FlushStateToDisk(state, FLUSH_STATE_ALWAYS);
 
         //Print out file info again
         pblocktree->ReadLastBlockFile(nLastBlockFile);
@@ -3750,19 +3761,13 @@ bool static LoadBlockIndexDB()
         }
         LogPrintf("%s: last block file info: %s\n", __func__, vinfoBlockFile[nLastBlockFile].ToString());
 
-        if(mapBlockIndex.size() != vinfoBlockFile[nLastBlockFile].nHeightLast + 1)
-        {
-            isFixed = false;
-            strError = "mapBlockIndex does not equal the meta data's last height";
-        }
-
-        if(!isFixed)
-        {
+        if (!isFixed) {
             strError = "Failed reading from database. " + strError + ". The block database is in an inconsistent state and may cause issues in the future."
-                    "To force start use -forcestart";
+                                                                     "To force start use -forcestart";
             uiInterface.ThreadSafeMessageBox(strError, "", CClientUIInterface::MSG_ERROR);
             abort();
         }
+        LogPrintf("Passed corruption fix\n");
     }
 
     // Check whether we need to continue reindexing

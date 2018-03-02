@@ -51,6 +51,7 @@ static inline uint32_t be32dec(const void *pp)
 	    ((uint32_t)(p[1]) << 16) + ((uint32_t)(p[0]) << 24));
 }
 
+#ifndef __FreeBSD__
 static inline void be32enc(void *pp, uint32_t x)
 {
 	uint8_t *p = (uint8_t *)pp;
@@ -59,6 +60,7 @@ static inline void be32enc(void *pp, uint32_t x)
 	p[1] = (x >> 16) & 0xff;
 	p[0] = (x >> 24) & 0xff;
 }
+#endif
 
 typedef struct HMAC_SHA256Context {
 	SHA256_CTX ictx;
