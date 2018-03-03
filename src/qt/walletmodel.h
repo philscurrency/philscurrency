@@ -189,7 +189,7 @@ public:
         void CopyFrom(const UnlockContext& rhs);
     };
 
-    UnlockContext requestUnlock(bool relock);
+    UnlockContext requestUnlock(bool relock = false);
 
     bool getPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
     bool isMine(CBitcoinAddress address);

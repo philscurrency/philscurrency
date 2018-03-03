@@ -354,7 +354,7 @@ void SendCoinsDialog::on_sendButton_clicked()
     WalletModel::EncryptionStatus encStatus = model->getEncryptionStatus();
     if(encStatus == model->Locked || encStatus == model->UnlockedForAnonymizationOnly)
     {
-        WalletModel::UnlockContext ctx(model->requestUnlock(true));
+        WalletModel::UnlockContext ctx(model->requestUnlock());
         if(!ctx.isValid())
         {
             // Unlock wallet was cancelled

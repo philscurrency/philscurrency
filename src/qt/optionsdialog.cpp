@@ -211,6 +211,8 @@ void OptionsDialog::setMapper()
     mapper->addMapping(ui->darksendRounds, OptionsModel::DarksendRounds);
     mapper->addMapping(ui->anonymizeDarkcoin, OptionsModel::AnonymizeDarkcoinAmount);
 
+    /* Masternode Tab */
+    mapper->addMapping(ui->showMasternodesTab, OptionsModel::ShowMasternodesTab);
 }
 
 void OptionsDialog::enableOkButton()

@@ -10,9 +10,11 @@
 #include "bitcoingui.h"
 #include "clientmodel.h"
 #include "guiutil.h"
+#include "masternodeconfig.h"
 #include "multisenddialog.h"
 #include "optionsmodel.h"
 #include "overviewpage.h"
+#include "platformstyle.h"
 #include "receivecoinsdialog.h"
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
@@ -72,11 +74,18 @@ WalletView::WalletView(QWidget *parent):
     receiveCoinsPage = new ReceiveCoinsDialog();
     sendCoinsPage = new SendCoinsDialog();
 
+
     addWidget(overviewPage);
     addWidget(transactionsPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
 	addWidget(explorerWindow);
+
+    QSettings settings;
+    if (settings.value("fShowMasternodesTab").toBool()) {
+        masternodeListPage = new MasternodeList();
+        addWidget(masternodeListPage);
+    }
 
     // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), transactionView, SLOT(focusTransaction(QModelIndex)));
@@ -125,6 +134,10 @@ void WalletView::setClientModel(ClientModel *clientModel)
 
     overviewPage->setClientModel(clientModel);
     sendCoinsPage->setClientModel(clientModel);
+    QSettings settings;
+    if (settings.value("fShowMasternodesTab").toBool()) {
+        masternodeListPage->setClientModel(clientModel);
+    }
 }
 
 void WalletView::setWalletModel(WalletModel *walletModel)
@@ -134,6 +147,10 @@ void WalletView::setWalletModel(WalletModel *walletModel)
     // Put transaction list in tabs
     transactionView->setModel(walletModel);
     overviewPage->setWalletModel(walletModel);
+    QSettings settings;
+    if (settings.value("fShowMasternodesTab").toBool()) {
+        masternodeListPage->setWalletModel(walletModel);
+    }
     receiveCoinsPage->setModel(walletModel);
     sendCoinsPage->setModel(walletModel);
 
@@ -184,6 +201,14 @@ void WalletView::gotoOverviewPage()
 void WalletView::gotoHistoryPage()
 {
     setCurrentWidget(transactionsPage);
+}
+
+void WalletView::gotoMasternodePage()
+{
+    QSettings settings;
+    if (settings.value("fShowMasternodesTab").toBool()) {
+        setCurrentWidget(masternodeListPage);
+    }
 }
 
 void WalletView::gotoBlockExplorerPage()

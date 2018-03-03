@@ -24,7 +24,7 @@ class WalletFrame : public QFrame
     Q_OBJECT
 
 public:
-    explicit WalletFrame(BitcoinGUI *_gui = 0);
+    explicit WalletFrame(BitcoinGUI* _gui = 0);
     ~WalletFrame();
 
     void setClientModel(ClientModel *clientModel);
@@ -46,6 +46,7 @@ private:
 
     bool bOutOfSync;
 
+
     WalletView *currentWalletView();
 
 public slots:
@@ -53,6 +54,8 @@ public slots:
     void gotoOverviewPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
+    /** Switch to masternode page */
+    void gotoMasternodePage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
