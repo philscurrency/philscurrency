@@ -109,6 +109,9 @@ namespace GUIUtil
 	
     // Open philscurrency.conf
     void openConfigfile();	
+
+// Open masternode.conf
+void openMNConfigfile();
     
     // Browse backup folder
     void showBackups();

@@ -6,6 +6,7 @@
 #include "masternode.h"
 #include "masternodeconfig.h"
 #include "spork.h"
+#include "chainparams.h"
 
 //
 // Bootup the Masternode, look for a 1000DRK input and register on the network

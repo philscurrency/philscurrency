@@ -136,7 +136,7 @@
         <translation>Poistaa käytöstä rahojen lähetyksen kun käyttöjärjestelmän käyttäjätili on vaarantunut. Ei tarjoa oikeaa turvallisuutta.</translation>
     </message>
     <message>
-        <source>For anonymization only</source>
+        <source>For anonymization and staking only</source>
         <translation>Vain anonymisointia varten</translation>
     </message>
     <message>
@@ -1660,7 +1660,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Osoite/Isäntänimi</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Käyttäjäohjelma</translation>
     </message>
     <message>
@@ -1861,7 +1861,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Versio</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Käyttäjäohjelma</translation>
     </message>
     <message>

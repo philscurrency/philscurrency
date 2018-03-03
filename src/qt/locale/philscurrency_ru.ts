@@ -136,7 +136,7 @@
         <translation>Служит для простейшего отключения функции sendmoney в случае компрометации аккаунта ОС. Не обеспечивает существенной безопасности.</translation>
     </message>
     <message>
-        <source>For anonymization only</source>
+        <source>For anonymization and staking only</source>
         <translation>Только для анонимизации</translation>
     </message>
     <message>
@@ -1659,8 +1659,8 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Адрес/Имя хоста</translation>
     </message>
     <message>
-        <source>User Agent</source>
-        <translation>User Agent</translation>
+        <source>Version</source>
+        <translation>Version</translation>
     </message>
     <message>
         <source>Ping Time</source>
@@ -1860,8 +1860,8 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Версия</translation>
     </message>
     <message>
-        <source>User Agent</source>
-        <translation>User Agent</translation>
+        <source>Version</source>
+        <translation>Version</translation>
     </message>
     <message>
         <source>Services</source>

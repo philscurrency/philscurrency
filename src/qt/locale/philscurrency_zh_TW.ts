@@ -136,7 +136,7 @@
         <translation>當OS帳戶被盜時就停止發送幣。不能提供真正的保護</translation>
     </message>
     <message>
-        <source>For anonymization only</source>
+        <source>For anonymization and staking only</source>
         <translation>只限匿名</translation>
     </message>
     <message>
@@ -1639,7 +1639,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>位址/主機名稱</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>使用者代理</translation>
     </message>
     <message>
@@ -1836,7 +1836,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>版本</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>使用者代理</translation>
     </message>
     <message>

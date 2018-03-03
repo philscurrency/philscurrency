@@ -23,6 +23,7 @@ class ClientModel;
 class NetworkStyle;
 class Notificator;
 class OptionsModel;
+class BlockExplorer;
 class RPCConsole;
 class SendCoinsRecipient;
 class UnitDisplayStatusBarControl;
@@ -67,6 +68,7 @@ public:
     void removeAllWallets();
 #endif // ENABLE_WALLET
     bool enableWallet;
+    bool fMultiSend = false;
 
 protected:
     void changeEvent(QEvent *e);
@@ -80,6 +82,7 @@ private:
     WalletFrame *walletFrame;
 
     UnitDisplayStatusBarControl *unitDisplayControl;
+    QLabel *labelStakingIcon;
     QLabel *labelEncryptionIcon;
     QPushButton *labelConnectionsIcon;
     QLabel *labelBlocksIcon;
@@ -97,6 +100,7 @@ private:
     QAction *usedReceivingAddressesAction;
     QAction *signMessageAction;
     QAction *verifyMessageAction;
+    QAction *bip38ToolAction;
     QAction *aboutAction;
     QAction *receiveCoinsAction;
     QAction *optionsAction;
@@ -113,14 +117,18 @@ private:
     QAction *openPeersAction;
     QAction *openRepairAction;
     QAction *openConfEditorAction;
+    QAction* openMNConfEditorAction;
     QAction *showBackupsAction;
     QAction *openAction;
+	QAction *openBlockExplorerAction;
     QAction *showHelpMessageAction;
+    QAction *multiSendAction;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
     Notificator *notificator;
     RPCConsole *rpcConsole;
+    BlockExplorer  *explorerWindow;
 
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
@@ -168,6 +176,8 @@ public slots:
     */
     void message(const QString &title, const QString &message, unsigned int style, bool *ret = NULL);
 
+    void setStakingStatus();
+
 #ifdef ENABLE_WALLET
     /** Set the encryption status as shown in the UI.
        @param[in] status            current encryption status
@@ -189,6 +199,8 @@ private slots:
     void gotoHistoryPage();
     /** Switch to masternode page */
     void gotoMasternodePage();
+    /** Switch to Explorer Page */
+    void gotoBlockExplorerPage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
@@ -198,9 +210,15 @@ private slots:
     void gotoSignMessageTab(QString addr = "");
     /** Show Sign/Verify Message dialog and switch to verify message tab */
     void gotoVerifyMessageTab(QString addr = "");
+    /** Show MultiSend Dialog */
+    void gotoMultiSendDialog();
+
+    /** Show BIP 38 tool - default to Encryption tab */
+    void gotoBip38Tool();
 
     /** Show open dialog */
     void openClicked();
+
 #endif // ENABLE_WALLET
     /** Show configuration dialog */
     void optionsClicked();

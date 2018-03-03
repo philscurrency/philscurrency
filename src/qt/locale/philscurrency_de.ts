@@ -136,7 +136,7 @@
         <translation>Verhindert das einfache Überweisen von Geld, falls das Systemkonto kompromittiert wurde. Bietet keine wirkliche Sicherheit.</translation>
     </message>
     <message>
-        <source>For anonymization only</source>
+        <source>For anonymization and staking only</source>
         <translation>Nur zur Anonymisierung</translation>
     </message>
     <message>
@@ -1658,7 +1658,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Adresse/Rechnername</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Benutzerprogramm</translation>
     </message>
     <message>
@@ -1859,7 +1859,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Version</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Benutzerprogramm</translation>
     </message>
     <message>

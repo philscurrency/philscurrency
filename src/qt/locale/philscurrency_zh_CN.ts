@@ -136,7 +136,7 @@
         <translation>当OS帐号被盗就禁止发送币。这并不提供真正的安全性。</translation>
     </message>
     <message>
-        <source>For anonymization only</source>
+        <source>For anonymization and staking only</source>
         <translation>仅限匿名</translation>
     </message>
     <message>
@@ -1652,7 +1652,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>地址/主机名</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>用户代理</translation>
     </message>
     <message>
@@ -1853,7 +1853,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>版本</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>用户代理</translation>
     </message>
     <message>

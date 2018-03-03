@@ -136,7 +136,7 @@
         <translation>Serve a disabilitare </translation>
     </message>
     <message>
-        <source>For anonymization only</source>
+        <source>For anonymization and staking only</source>
         <translation>Per la sola anomizzazione</translation>
     </message>
     <message>
@@ -1585,7 +1585,7 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Indirizzo/Hostname</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agente Utente</translation>
     </message>
     </context>
@@ -1770,7 +1770,7 @@ Più URL vengono separati da una barra verticale |.</translation>
         <translation>Versione</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agente Utente</translation>
     </message>
     <message>

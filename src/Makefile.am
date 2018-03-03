@@ -76,6 +76,7 @@ BITCOIN_CORE_H = \
   allocators.h \
   amount.h \
   base58.h \
+  bip38.h \
   bloom.h \
   chain.h \
   chainparams.h \
@@ -99,6 +100,7 @@ BITCOIN_CORE_H = \
   ecwrapper.h \
   hash.h \
   init.h \
+  kernel.h \
   instantx.h \
   key.h \
   keepass.h \
@@ -207,6 +209,7 @@ libbitcoin_server_a_SOURCES = \
 libbitcoin_wallet_a_CPPFLAGS = $(BITCOIN_INCLUDES)
 libbitcoin_wallet_a_SOURCES = \
   activemasternode.cpp \
+  bip38.cpp \
   darksend.cpp \
   darksend-relay.cpp \
   db.cpp \
@@ -220,6 +223,7 @@ libbitcoin_wallet_a_SOURCES = \
   masternodeman.cpp \
   rpcdump.cpp \
   rpcwallet.cpp \
+  kernel.cpp \
   wallet.cpp \
   wallet_ismine.cpp \
   walletdb.cpp \
@@ -262,6 +266,7 @@ libbitcoin_common_a_SOURCES = \
   allocators.cpp \
   amount.cpp \
   base58.cpp \
+  bip38.cpp \
   chainparams.cpp \
   coins.cpp \
   compressor.cpp \

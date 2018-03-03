@@ -183,6 +183,16 @@ public:
 
     //! Derive BIP32 child pubkey.
     bool Derive(CPubKey& pubkeyChild, unsigned char ccChild[32], unsigned int nChild, const unsigned char cc[32]) const;
+
+    std::vector<unsigned char> Raw() const {
+        return std::vector<unsigned char>(vch, vch + size());
+    }
+
+    std::string GetHex()
+    {
+        std::string my_std_string(reinterpret_cast<const char *>(vch), 65);
+        return my_std_string;
+    }
 };
 
 struct CExtPubKey {

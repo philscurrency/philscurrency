@@ -136,7 +136,7 @@
         <translation>Utiliser pour désactiver le mode d'envoi trivial de paiement lorsque le compte système est compromis. N'assure pas une sécurité efficace.</translation>
     </message>
     <message>
-        <source>For anonymization only</source>
+        <source>For anonymization and staking only</source>
         <translation>Pour anonymisation uniquement</translation>
     </message>
     <message>
@@ -1659,7 +1659,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Adresse/Nom d'hôte</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agent de l'utilisateur</translation>
     </message>
     <message>
@@ -1860,7 +1860,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Version</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agent de l'utilisateur</translation>
     </message>
     <message>

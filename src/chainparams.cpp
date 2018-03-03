@@ -108,12 +108,15 @@ public:
         nDefaultPort = 36003;
         bnProofOfWorkLimit = ~uint256(0) >> 20;
         nSubsidyHalvingInterval = 400000;
+        nMaxReorganizationDepth = 100;
         nEnforceBlockUpgradeMajority = 750;
         nRejectBlockOutdatedMajority = 950;
         nToCheckBlockUpgradeMajority = 1000;
         nMinerThreads = 0;
         nTargetTimespan = 10 * 60; // 10 minutes
         nTargetSpacing = 1 * 60; // 1 minute
+        nLastPOWBlock = ;
+        nMaturity = 10;
 
         const char* pszTimestamp = "CNN June 28 2017 The next big thing is here";
         CMutableTransaction txNew;
@@ -155,6 +158,7 @@ public:
         fMineBlocksOnDemand = false;
         fSkipProofOfWorkCheck = false;
         fTestnetToBeDeprecatedFieldRPC = false;
+        fHeadersFirstSyncingActive = false;
 
         nPoolMaxTransactions = 3;
         strSporkKey = "045fdc1d5796a4cc3ec7b93de854747f91ac8c44b150a37a45fe7b115e19463f902639ac385a7262423d5ac2e5fcea81a403525b25e56c6ff6d6020ff97b9bff57";
@@ -191,6 +195,8 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 10 * 60; // 10 minutes
         nTargetSpacing = 1 * 60; // 1 minute
+        nLastPOWBlock = 200;
+        nMaturity = 15;
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime = 1503261995;
@@ -200,7 +206,6 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(111);
         base58Prefixes[SCRIPT_ADDRESS] = list_of(196);

@@ -136,7 +136,7 @@
         <translation>Sirve  para desactivar sendmoney trivial cuando una cuenta del SO se ve comprometida . No ofrece seguridad real.</translation>
     </message>
     <message>
-        <source>For anonymization only</source>
+        <source>For anonymization and staking only</source>
         <translation>Solo para anonimizar</translation>
     </message>
     <message>
@@ -1659,7 +1659,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Dirección/Nombre del servidor</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agente del Usuario</translation>
     </message>
     <message>
@@ -1860,7 +1860,7 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
         <translation>Versión</translation>
     </message>
     <message>
-        <source>User Agent</source>
+        <source>Version</source>
         <translation>Agente del Usuario</translation>
     </message>
     <message>

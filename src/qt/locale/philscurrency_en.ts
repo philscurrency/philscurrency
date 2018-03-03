@@ -169,8 +169,8 @@
     </message>
     <message>
         <location line="+3"/>
-        <source>For anonymization only</source>
-        <translation>For anonymization only</translation>
+        <source>For anonymization and staking only</source>
+        <translation>For anonymization and staking only</translation>
     </message>
     <message>
         <location filename="../askpassphrasedialog.cpp" line="+43"/>
@@ -2107,8 +2107,8 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
     </message>
     <message>
         <location line="+0"/>
-        <source>User Agent</source>
-        <translation>User Agent</translation>
+        <source>Version</source>
+        <translation>Version</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -2381,8 +2381,8 @@ https://www.transifex.com/projects/p/philscurrency/</translation>
     </message>
     <message>
         <location line="+23"/>
-        <source>User Agent</source>
-        <translation>User Agent</translation>
+        <source>Version</source>
+        <translation>Version</translation>
     </message>
     <message>
         <location line="+23"/>
