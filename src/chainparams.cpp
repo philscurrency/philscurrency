@@ -207,8 +207,7 @@ public:
         hashGenesisBlock = genesis.GetHash();
         assert(hashGenesisBlock == uint256("0x086f6babf052b610dd77df9b8abea93aa570503aec7c81cf40cb671a4d9ac7af"));
 
-        vFixedSeeds.clear();
-        vSeeds.clear();
+        vSeeds.push_back(CDNSSeedData("159.65.95.40", "159.65.95.40"));
 
         base58Prefixes[PUBKEY_ADDRESS] = list_of(111);
         base58Prefixes[SCRIPT_ADDRESS] = list_of(196);
