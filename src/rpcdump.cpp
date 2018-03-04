@@ -407,10 +407,10 @@ Value bip38encrypt(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 2)
         throw runtime_error(
-            "bip38encrypt \"darknetaddress\"\n"
-            "\nEncrypts a private key corresponding to 'darknetaddress'.\n"
+            "bip38encrypt \"philscurrencyaddress\"\n"
+            "\nEncrypts a private key corresponding to 'philscurrencyaddress'.\n"
             "\nArguments:\n"
-            "1. \"darknetaddress\"   (string, required) The darknet address for the private key (you must hold the key already)\n"
+            "1. \"philscurrencyaddress\"   (string, required) The philscurrency address for the private key (you must hold the key already)\n"
             "2. \"passphrase\"   (string, required) The passphrase you want the private key to be encrypted with - Valid special chars: !#$%&'()*+,-./:;<=>?`{|}~ \n"
             "\nResult:\n"
             "\"key\"                (string) The encrypted private key\n"
@@ -424,7 +424,7 @@ Value bip38encrypt(const Array& params, bool fHelp)
 
     CBitcoinAddress address;
     if (!address.SetString(strAddress))
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid DarkNet address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Philscurrency address");
     CKeyID keyID;
     if (!address.GetKeyID(keyID))
         throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
@@ -446,7 +446,7 @@ Value bip38decrypt(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 2)
         throw runtime_error(
-            "bip38decrypt \"darknetaddress\"\n"
+            "bip38decrypt \"philscurrencyaddress\"\n"
             "\nDecrypts and then imports password protected private key.\n"
             "\nArguments:\n"
             "1. \"passphrase\"   (string, required) The passphrase you want the private key to be encrypted with\n"
