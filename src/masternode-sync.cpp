@@ -359,7 +359,7 @@ void CMasternodeSync::Process()
             }
         }
 
-        if (pnode->nVersion >= MIN_BUDGET_PEER_PROTO_VERSION) {
+        if (pnode->nVersion >= ActiveProtocol()) {
 
             if(RequestedMasternodeAssets == MASTERNODE_SYNC_BUDGET){
                 //we'll start rejecting votes if we accidentally get set as synced too soon

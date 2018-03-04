@@ -568,7 +568,7 @@ bool CBudgetManager::IsBudgetPaymentBlock(int nBlockHeight)
     /*
         If budget doesn't have 5% of the network votes, then we should pay a masternode instead
     */
-    if(nHighestCount > mnodeman.CountEnabled(MIN_BUDGET_PEER_PROTO_VERSION)/20) return true;
+    if(nHighestCount > mnodeman.CountEnabled(ActiveProtocol()) /20) return true;
 
     return false;
 }
@@ -615,7 +615,7 @@ bool CBudgetManager::IsTransactionValid(const CTransaction& txNew, int nBlockHei
     /*
         If budget doesn't have 5% of the network votes, then we should pay a masternode instead
     */
-    if(nHighestCount < mnodeman.CountEnabled(MIN_BUDGET_PEER_PROTO_VERSION)/20) return false;
+    if(nHighestCount < mnodeman.CountEnabled(ActiveProtocol()) /20) return false;
 
     // check the highest finalized budgets (+/- 10% to assist in consensus)
 
@@ -624,7 +624,7 @@ bool CBudgetManager::IsTransactionValid(const CTransaction& txNew, int nBlockHei
     {
         CFinalizedBudget* pfinalizedBudget = &((*it).second);
 
-        if(pfinalizedBudget->GetVoteCount() > nHighestCount - mnodeman.CountEnabled(MIN_BUDGET_PEER_PROTO_VERSION)/10){
+        if(pfinalizedBudget->GetVoteCount() > nHighestCount - mnodeman.CountEnabled(ActiveProtocol()) /10){
             if(nBlockHeight >= pfinalizedBudget->GetBlockStart() && nBlockHeight <= pfinalizedBudget->GetBlockEnd()){
                 if(pfinalizedBudget->IsTransactionValid(txNew, nBlockHeight)){
                     return true;
@@ -709,7 +709,7 @@ std::vector<CBudgetProposal*> CBudgetManager::GetBudget()
         //prop start/end should be inside this period
         if(pbudgetProposal->fValid && pbudgetProposal->nBlockStart <= nBlockStart &&
                 pbudgetProposal->nBlockEnd >= nBlockEnd &&
-                pbudgetProposal->GetYeas() - pbudgetProposal->GetNays() > mnodeman.CountEnabled(MIN_BUDGET_PEER_PROTO_VERSION)/10 && 
+                pbudgetProposal->GetYeas() - pbudgetProposal->GetNays() > mnodeman.CountEnabled(ActiveProtocol())/10 && 
                 pbudgetProposal->IsEstablished())
         {
             if(pbudgetProposal->GetAmount() + nBudgetAllocated <= nTotalBudget) {
@@ -835,7 +835,7 @@ void CBudgetManager::NewBlock()
 
         LOCK(cs_vNodes);
         BOOST_FOREACH(CNode* pnode, vNodes)
-            if(pnode->nVersion >= MIN_BUDGET_PEER_PROTO_VERSION) 
+            if (pnode->nVersion >= ActiveProtocol())
                 Sync(pnode, 0, true);
         
         MarkSynced();
@@ -1340,7 +1340,7 @@ CBudgetProposal::CBudgetProposal(const CBudgetProposal& other)
 
 bool CBudgetProposal::IsValid(std::string& strError, bool fCheckCollateral)
 {
-    if(GetNays() - GetYeas() > mnodeman.CountEnabled(MIN_BUDGET_PEER_PROTO_VERSION)/10){
+    if(GetNays() - GetYeas() > mnodeman.CountEnabled(ActiveProtocol())/10){
          strError = "Active removal";
          return false;
     }
@@ -1384,7 +1384,7 @@ bool CBudgetProposal::IsValid(std::string& strError, bool fCheckCollateral)
     // nTime not being saved correctly
     // -- TODO: We should keep track of the last time the proposal was valid, if it's invalid for 2 weeks, erase it
     // if(nTime + (60*60*24*2) < GetAdjustedTime()) {
-    //     if(GetYeas()-GetNays() < (mnodeman.CountEnabled(MIN_BUDGET_PEER_PROTO_VERSION)/10)) {
+    //     if(GetYeas()-GetNays() < (mnodeman.CountEnabled(ActiveProtocol())/10)) {
     //         strError = "Not enough support";
     //         return false;
     //     }
@@ -1559,7 +1559,7 @@ CBudgetProposalBroadcast::CBudgetProposalBroadcast(std::string strProposalNameIn
 void CBudgetProposalBroadcast::Relay()
 {
     CInv inv(MSG_BUDGET_PROPOSAL, GetHash());
-    RelayInv(inv, MIN_BUDGET_PEER_PROTO_VERSION);
+    RelayInv(inv);
 }
 
 CBudgetVote::CBudgetVote()
@@ -1585,7 +1585,7 @@ CBudgetVote::CBudgetVote(CTxIn vinIn, uint256 nProposalHashIn, int nVoteIn)
 void CBudgetVote::Relay()
 {
     CInv inv(MSG_BUDGET_VOTE, GetHash());
-    RelayInv(inv, MIN_BUDGET_PEER_PROTO_VERSION);
+    RelayInv(inv);
 }
 
 bool CBudgetVote::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)
@@ -1960,7 +1960,7 @@ CFinalizedBudgetBroadcast::CFinalizedBudgetBroadcast(std::string strBudgetNameIn
 void CFinalizedBudgetBroadcast::Relay()
 {
     CInv inv(MSG_BUDGET_FINALIZED, GetHash());
-    RelayInv(inv, MIN_BUDGET_PEER_PROTO_VERSION);
+    RelayInv(inv);
 }
 
 CFinalizedBudgetVote::CFinalizedBudgetVote()
@@ -1986,7 +1986,7 @@ CFinalizedBudgetVote::CFinalizedBudgetVote(CTxIn vinIn, uint256 nBudgetHashIn)
 void CFinalizedBudgetVote::Relay()
 {
     CInv inv(MSG_BUDGET_FINALIZED_VOTE, GetHash());
-    RelayInv(inv, MIN_BUDGET_PEER_PROTO_VERSION);
+    RelayInv(inv);
 }
 
 bool CFinalizedBudgetVote::Sign(CKey& keyMasternode, CPubKey& pubKeyMasternode)

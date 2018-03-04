@@ -117,6 +117,8 @@ public:
         nTargetSpacing = 1 * 60; // 1 minute
         nLastPOWBlock = ;
         nMaturity = 10;
+        nMasternodeCountDrift = 20;
+        nModifierUpdateBlock = 99999999;
 
         const char* pszTimestamp = "CNN June 28 2017 The next big thing is here";
         CMutableTransaction txNew;
@@ -197,6 +199,7 @@ public:
         nTargetSpacing = 1 * 60; // 1 minute
         nLastPOWBlock = 200;
         nMaturity = 15;
+        nModifierUpdateBlock = 51197;
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime = 1503261995;

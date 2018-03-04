@@ -193,12 +193,12 @@ Value masternode(const Array& params, bool fHelp)
             if(chainActive.Tip())
                 mnodeman.GetNextMasternodeInQueueForPayment(chainActive.Tip()->nHeight, true, nCount);
 
-            if(params[1] == "ds") return mnodeman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION);
+            if(params[1] == "ds") return mnodeman.CountEnabled(ActiveProtocol());
             if(params[1] == "enabled") return mnodeman.CountEnabled();
             if(params[1] == "qualify") return nCount;
             if(params[1] == "all") return strprintf("Total: %d (DS Compatible: %d / Enabled: %d / Qualify: %d)",
                                                     mnodeman.size(),
-                                                    mnodeman.CountEnabled(MIN_POOL_PEER_PROTO_VERSION),
+                                                    mnodeman.CountEnabled(ActiveProtocol()),
                                                     mnodeman.CountEnabled(),
                                                     nCount);
         }

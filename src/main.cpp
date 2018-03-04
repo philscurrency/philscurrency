@@ -1641,9 +1641,15 @@ int64_t GetBlockValue(int nBits, int nHeight, const CAmount& nFees)
     return nSubsidy + nFees;
 }
 
-int64_t GetMasternodePayment(int nHeight, int64_t blockValue)
+int64_t GetMasternodePayment(int nHeight, int64_t blockValue, int nMasternodeCount)
 {
     int64_t ret = blockValue*0.5; // start at 50%
+        int64_t nMoneySupply = chainActive.Tip()->nMoneySupply;
+        int64_t mNodeCoins = mnodeman.size() * 12000 * COIN;
+
+        //if a mn count is inserted into the function we are looking for a specific result for a masternode count
+        if(nMasternodeCount)
+            mNodeCoins = nMasternodeCount * 12000 * COIN;
 
     return ret;
 }
@@ -4616,13 +4622,11 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         CAddress addrFrom;
         uint64_t nNonce = 1;
         vRecv >> pfrom->nVersion >> pfrom->nServices >> nTime >> addrMe;
-        if (pfrom->nVersion < MIN_PEER_PROTO_VERSION || 
-        	(chainActive.Tip()->nHeight >= Params().LAST_POW_BLOCK() && pfrom->nVersion < MIN_PEER_PROTO_VERSION_POS))
-        {
+        if (pfrom->nVersion < ActiveProtocol()) {
             // disconnect from peers older than this proto version
             LogPrintf("peer=%d using obsolete version %i; disconnecting\n", pfrom->id, pfrom->nVersion);
             pfrom->PushMessage("reject", strCommand, REJECT_OBSOLETE,
-                               strprintf("Version must be %d or greater", MIN_PEER_PROTO_VERSION));
+                strprintf("Version must be %d or greater", ActiveProtocol()));
             pfrom->fDisconnect = true;
             return false;
         }
@@ -5456,8 +5460,17 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
     }
 
 
-
     return true;
+}
+
+int ActiveProtocol()
+{
+    if (IsSporkActive(SPORK_14_NEW_PROTOCOL_ENFORCEMENT)) {
+        if (chainActive.Tip()->nHeight >= Params().ModifierUpgradeBlock())
+            return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
+    }
+
+    return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT;
 }
 
 // requires LOCK(cs_vRecvMsg)
