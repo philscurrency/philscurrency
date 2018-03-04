@@ -115,7 +115,7 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 10 * 60; // 10 minutes
         nTargetSpacing = 1 * 60; // 1 minute
-        nLastPOWBlock = ;
+        nLastPOWBlock = 300000;
         nMaturity = 10;
         nMasternodeCountDrift = 20;
         nModifierUpdateBlock = 99999999;
@@ -197,9 +197,9 @@ public:
         nMinerThreads = 0;
         nTargetTimespan = 10 * 60; // 10 minutes
         nTargetSpacing = 1 * 60; // 1 minute
-        nLastPOWBlock = 200;
+        nLastPOWBlock = 100;
         nMaturity = 15;
-        nModifierUpdateBlock = 51197;
+        nModifierUpdateBlock = 15;
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nTime = 1503261995;
